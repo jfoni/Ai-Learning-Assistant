@@ -9,20 +9,17 @@ import connectDB from './config/db.js';
 import errorHandler from './middleware/errorHandler.js';
 
 import authRoutes from './routes/authRoutes.js';
-import documentRoutes from  './routes/documentRoutes.js';
+import documentRoutes from './routes/documentRoutes.js';
 import flashcardRoutes from './routes/flashcardRoutes.js'; 
 import aiRoutes from './routes/aiRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 
-// ES6 module __dirname alternative
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Initialize express app
 const app = express();
 
-// Middleware to handle CORS
 app.use(
     cors({
         origin: '*',
@@ -35,10 +32,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static folder for uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Routes
 
 app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
@@ -48,7 +42,6 @@ app.use('/api/quizzes', quizRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use(errorHandler);
 
-// 404 handler
 app.use((req, res) => {
     res.status(404).json({
         success: false,
@@ -57,22 +50,23 @@ app.use((req, res) => {
     });
 });
 
-// Start server
 const PORT = process.env.PORT || 8000;
 
-const startServer = async () => {
-    try {
-        await connectDB();
+if (process.env.NODE_ENV !== 'production') {
+    const startServer = async () => {
+        try {
+            await connectDB();
+            app.listen(PORT, () => {
+                console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+            });
+        } catch (error) {
+            console.error('Failed to start server:', error.message);
+            process.exit(1);
+        }
+    };
+    startServer();
+} else {
+    connectDB();
+}
 
-        app.listen(PORT, () => {
-            console.log(
-                `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
-            );
-        });
-    } catch (error) {
-        console.error('Failed to start server:', error.message);
-        process.exit(1);
-    }
-};
-
-startServer();
+export default app;
