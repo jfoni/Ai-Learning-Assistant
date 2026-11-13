@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../../services/firebase';
-import { Mail, Lock, User, ArrowRight, Sparkles } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight } from 'lucide-react';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -12,13 +12,21 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Handle user registration
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      // Create account with firebase
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Update display name
+      await updateProfile(userCredential.user, {
+        displayName: name,
+      });
+
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);
@@ -30,13 +38,13 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-[#e2eaeb] flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden">
       
-      {/* Aesthetic Background Ambient Shapes */}
+      {/* Background ambient shapes */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#54626f]/5 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/40 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="relative w-full max-w-md mt-8">
         
-        {/* Floating Aesthetic Cat Mascot */}
+        {/* Floating cat mascot */}
         <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center select-none pointer-events-none">
           <div className="relative bg-[#54626f] text-white px-3.5 py-1 rounded-full text-xs font-semibold shadow-lg mb-1.5 animate-bounce tracking-wide">
             Join Us! 🐾
@@ -47,7 +55,7 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Main Glassmorphic Card */}
+        {/* Main form container */}
         <div className="bg-white/70 backdrop-blur-2xl w-full p-8 pt-12 rounded-[2.5rem] shadow-[0_20px_50px_rgba(84,98,111,0.1)] border border-white/80 relative overflow-hidden">
           
           <div className="text-center mb-6 mt-2">
