@@ -4,6 +4,7 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import errorHandler from './middleware/errorHandler.js';
@@ -20,10 +21,11 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Middleware setup
 app.use(
     cors({
         origin: '*',
-        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
         allowedHeaders: ['Content-Type', 'Authorization'],
         credentials: true,
     })
@@ -32,16 +34,27 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
+// Static folder for uploaded files
+app.use('/uploads', express.static(uploadDir));
+
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/flashcards', flashcardRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+
+// Error Handler Middleware
 app.use(errorHandler);
 
+// 404 Fallback
 app.use((req, res) => {
     res.status(404).json({
         success: false,
@@ -52,12 +65,13 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 8000;
 
+// Server startup logic
 if (process.env.NODE_ENV !== 'production') {
     const startServer = async () => {
         try {
             await connectDB();
             app.listen(PORT, () => {
-                console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+                console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
             });
         } catch (error) {
             console.error('Failed to start server:', error.message);

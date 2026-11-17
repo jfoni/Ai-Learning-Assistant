@@ -2,13 +2,12 @@ import mongoose from 'mongoose';
 
 const documentSchema = new mongoose.Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: true
   },
   title: {
     type: String,
-    required: [true, 'Please provide a document title'],
+    required: true,
     trim: true
   },
   fileName: {
@@ -23,43 +22,18 @@ const documentSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  extractedText: {
+  status: {
     type: String,
-    default: ''
+    enum: ['pending', 'ready', 'processing', 'error'],
+    default: 'ready'
   },
-  chunks: [{
-    content: {
-      type: String,
-      required: true
-    },
-    pageNumber: {
-      type: Number,
-      default: 0
-    },
-    chunkIndex: {
-      type: Number,
-      required: true
-    }
-  }],
   uploadDate: {
     type: Date,
     default: Date.now
-  },
-  lastAccessed: {
-    type: Date,
-    default: Date.now
-  },
-  status: {
-    type: String,
-    enum: ['processing', 'ready', 'failed'],
-    default: 'processing'
   }
 }, {
   timestamps: true
 });
-
-// Index for faster queries
-documentSchema.index({ userId: 1, uploadDate: -1 });
 
 const Document = mongoose.model('Document', documentSchema);
 

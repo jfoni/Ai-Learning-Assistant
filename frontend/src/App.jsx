@@ -5,6 +5,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 import Dashboard from './pages/Dashboard/DashboardPage';
+import DocumentListPage from './pages/Documents/DocumentListPage';
 
 export default function App() {
   return (
@@ -19,6 +20,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/documents" 
+            element={
+              <ProtectedRoute>
+                <DocumentListPage />
               </ProtectedRoute>
             } 
           />

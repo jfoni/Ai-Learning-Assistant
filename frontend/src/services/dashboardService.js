@@ -4,10 +4,10 @@ const API_BASE_URL = window.location.hostname === 'localhost' || window.location
   ? 'http://localhost:8000/api'
   : '/api';
 
-const API_URL = `${API_BASE_URL}/dashboard/`;
+const API_URL = `${API_BASE_URL}/dashboard`;
 
 export const getDashboardOverview = async (userId = '') => {
-  const url = userId ? `${API_URL}overview?userId=${userId}` : `${API_URL}overview`;
+  const url = userId ? `${API_URL}/overview?userId=${userId}` : `${API_URL}/overview`;
   const response = await axios.get(url);
   return response.data;
 };

@@ -1,351 +1,142 @@
+import React, { useState, useEffect } from 'react';
+import { fetchDocuments, uploadDocument, deleteDocument } from '../../services/documentService';
 
-import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from '../../services/firebase';
-import { getDashboardOverview } from '../../services/dashboardService';
-import {
-  BookOpen,
-  BrainCircuit,
-  FileText,
-  Award,
-  TrendingUp,
-  LogOut,
-  CheckCircle2,
-  Clock,
-  ArrowUpRight
-} from 'lucide-react';
-
-import './DashboardPage.css';
-
-export default function DashboardPage() {
-  const [overview, setOverview] = useState(null);
-  const [userName, setUserName] = useState('Learner');
+export default function DocumentListPage() {
+  const [documents, setDocuments] = useState([]);
+  const [title, setTitle] = useState('');
+  const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const [uploading, setUploading] = useState(false);
+
+  const userId = "user_123";
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const name =
-          user.displayName || user.email?.split('@')[0] || 'Learner';
+    loadDocs();
+  }, []);
 
-        setUserName(name);
-      } else {
-        navigate('/login');
-      }
-    });
-
-    const fetchDashboardData = async () => {
-      try {
-        const response = await getDashboardOverview();
-
-        if (response.success) {
-          setOverview(response.data);
-        }
-      } catch (err) {
-        console.error('Dashboard Error:', err);
-        setError('Failed to load dashboard data.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-
-    return () => unsubscribe();
-  }, [navigate]);
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigate('/login');
-  };
-
-  const stats = overview?.stats || {
-    totalQuizzes: 0,
-    totalFlashcards: 4,
-    totalSubmissions: 0,
-    averageScore: 0
-  };
-
-  const recentQuizzes = overview?.recentActivity?.quizzes || [];
-  const recentSubmissions = overview?.recentActivity?.submissions || [];
-
-  const cards = [
-    {
-      title: 'Total Quizzes',
-      value: stats.totalQuizzes,
-      icon: BookOpen,
-      link: '/quizzes'
-    },
-    {
-      title: 'Flashcards',
-      value: stats.totalFlashcards,
-      icon: BrainCircuit,
-      link: '/flashcards'
-    },
-    {
-      title: 'Submissions',
-      value: stats.totalSubmissions,
-      icon: Award,
-      link: '/documents'
-    },
-    {
-      title: 'Avg Score',
-      value: `${stats.averageScore}%`,
-      icon: TrendingUp,
-      link: '/quizzes'
+  const loadDocs = async () => {
+    try {
+      const data = await fetchDocuments(userId);
+      setDocuments(data);
+    } catch (err) {
+      console.error('Error fetching docs:', err);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const completion = Math.min(stats.totalQuizzes * 25, 100);
-  const accuracy = Math.min(Math.max(stats.averageScore, 0), 100);
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('userId', userId);
+    formData.append('title', title || file.name);
+    formData.append('file', file);
+
+    try {
+      setUploading(true);
+      await uploadDocument(formData);
+      setTitle('');
+      setFile(null);
+      loadDocs();
+    } catch (err) {
+      console.error('Upload failed:', err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteDocument(id);
+      setDocuments(documents.filter(doc => doc._id !== id));
+    } catch (err) {
+      console.error('Delete failed:', err);
+    }
+  };
 
   return (
-    <div className="dashboard-page min-h-screen bg-[#e2eaeb] flex font-sans">
-
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-[#D5DDE0] p-6 hidden md:flex flex-col justify-between shadow-sm">
-
-        <div>
-          <div className="flex items-center space-x-3 mb-10 px-2">
-            <div className="w-10 h-10 rounded-2xl bg-[#54626f] text-white flex items-center justify-center shadow-md">
-              <BookOpen className="w-5 h-5" />
-            </div>
-
-            <div>
-              <h1 className="font-black text-lg tracking-tight">
-                AI Assistant
-              </h1>
-              <p className="text-[10px] font-black tracking-wider uppercase">
-                Smart Study Hub
-              </p>
-            </div>
-          </div>
-
-          <nav className="space-y-2">
-            <Link to="/dashboard" className="sidebar-link active">
-              <TrendingUp className="w-4 h-4" />
-              <span>Overview</span>
-            </Link>
-
-            <Link to="/documents" className="sidebar-link">
-              <FileText className="w-4 h-4" />
-              <span>Documents</span>
-            </Link>
-
-            <Link to="/flashcards" className="sidebar-link">
-              <BrainCircuit className="w-4 h-4" />
-              <span>Flashcards</span>
-            </Link>
-
-            <Link to="/quizzes" className="sidebar-link">
-              <BookOpen className="w-4 h-4" />
-              <span>Quizzes</span>
-            </Link>
-          </nav>
+    <div className="min-h-screen bg-[#e2eaeb] p-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-extrabold text-[#1F2118]">Documents</h1>
+          <p className="text-[#54626f] text-sm mt-1">Manage and upload your study materials and references.</p>
         </div>
 
-        <div className="pt-6 border-t border-[#D5DDE0]">
-          <button onClick={handleLogout} className="logout-button">
-            <LogOut className="w-4 h-4" />
-            <span>Sign Out</span>
-          </button>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 mb-8">
+          <h2 className="text-xl font-bold text-[#1F2118] mb-4">Upload New Document</h2>
+          <form onSubmit={handleUpload} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-[#54626f] uppercase mb-1">Document Title</label>
+                <input
+                  type="text"
+                  placeholder="Enter custom title (optional)"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-[#1F2118] focus:outline-none focus:border-[#54626f]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#54626f] uppercase mb-1">Select File</label>
+                <input
+                  type="file"
+                  onChange={(e) => setFile(e.target.files[0])}
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-[#54626f] text-sm file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#54626f] file:text-white hover:file:bg-[#1F2118]"
+                  required
+                />
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={uploading}
+              className="px-6 py-2.5 rounded-xl font-semibold text-white bg-[#54626f] hover:bg-[#1F2118] transition-colors shadow-sm disabled:opacity-50"
+            >
+              {uploading ? 'Uploading...' : 'Upload Document'}
+            </button>
+          </form>
         </div>
-      </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 p-6 md:p-10 overflow-y-auto">
-
-        {/* Header */}
-        <header className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-
-          <div>
-            <h2 className="dashboard-heading text-2xl md:text-3xl font-black tracking-tight">
-              Dashboard Overview
-            </h2>
-
-            <p className="dashboard-description text-sm font-semibold mt-1">
-              Here is your personalized learning progress summary.
-            </p>
-          </div>
-
-          <div className="flex items-center space-x-3 self-start md:self-auto bg-white px-4 py-2.5 rounded-3xl border border-[#D5DDE0] shadow-md">
-
-            <div className="welcome-bubble">
-              Welcome to your profile,{' '}
-              <span>{userName}</span>! 🐾
-            </div>
-
-            <div className="w-11 h-11 rounded-2xl bg-[#e2eaeb] flex items-center justify-center text-2xl shadow-inner">
-              🐱
-            </div>
-          </div>
-        </header>
-
-        {loading ? (
-          <div className="flex justify-center items-center h-64 font-bold">
-            Loading dashboard stats...
-          </div>
-        ) : error ? (
-          <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-sm font-medium">
-            {error}
-          </div>
-        ) : (
-          <>
-
-            {/* Statistics Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-
-              {cards.map((card) => {
-                const Icon = card.icon;
-
-                return (
-                  <Link
-                    to={card.link}
-                    key={card.title}
-                    className="stat-card"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className="stat-icon">
-                        <Icon className="w-7 h-7" />
-                      </div>
-
-                      <div>
-                        <p className="stat-title">
-                          {card.title}
-                        </p>
-
-                        <h3 className="stat-number">
-                          {card.value}
-                        </h3>
-                      </div>
-                    </div>
-
-                    <ArrowUpRight className="w-5 h-5 stat-arrow" />
-                  </Link>
-                );
-              })}
-
-            </div>
-
-            {/* Performance Analytics */}
-            <div className="analytics-card">
-
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h3 className="section-heading">
-                    Performance Analytics & Progress
-                  </h3>
-
-                  <p className="section-description">
-                    Visual breakdown of your quiz accuracy and mastery level
-                  </p>
-                </div>
-
-                <span className="progress-badge">
-                  Active Progress
-                </span>
-              </div>
-
-              <div className="space-y-5">
-
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-2">
-                    <span>Overall Quiz Score Accuracy</span>
-                    <span className="text-black">{stats.averageScore}%</span>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+          <h2 className="text-xl font-bold text-[#1F2118] mb-4">Uploaded Documents</h2>
+          
+          {loading ? (
+            <p className="text-[#54626f]">Loading documents...</p>
+          ) : documents.length === 0 ? (
+            <p className="text-[#54626f] text-sm">No documents found yet. Upload your first file above!</p>
+          ) : (
+            <div className="space-y-3">
+              {documents.map((doc) => (
+                <div key={doc._id} className="p-4 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-between hover:bg-gray-100/50 transition-colors">
+                  <div>
+                    <h3 className="font-bold text-[#1F2118]">{doc.title}</h3>
+                    <p className="text-xs text-[#54626f] mt-0.5">
+                      Uploaded on: {new Date(doc.uploadDate || doc.createdAt).toLocaleDateString()} | Size: {(doc.fileSize / 1024).toFixed(1)} KB
+                    </p>
                   </div>
-
-                  <div className="progress-track">
-                    <div
-                      className="progress-fill"
-                      style={{ width: `${accuracy}%` }}
-                    />
+                  <div className="flex items-center gap-3">
+                    <a
+                      href={`http://localhost:8000/${doc.filePath}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-1.5 rounded-lg text-xs font-semibold text-[#54626f] bg-white border border-gray-200 hover:bg-gray-50 shadow-sm"
+                    >
+                      View File
+                    </a>
+                    <button
+                      onClick={() => handleDelete(doc._id)}
+                      className="px-4 py-1.5 rounded-lg text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-2">
-                    <span>Study Material Completion Rate</span>
-                    <span className="text-black">{completion}%</span>
-                  </div>
-
-                  <div className="progress-track">
-                    <div
-                      className="progress-fill"
-                      style={{ width: `${completion}%` }}
-                    />
-                  </div>
-                </div>
-
-              </div>
+              ))}
             </div>
-
-            {/* Recent Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-              {/* Recent Quizzes */}
-              <div className="activity-card">
-                <h3 className="activity-heading">
-                  <Clock className="w-4 h-4 text-[#54626f]" />
-                  <span>Recent Quizzes Created</span>
-                </h3>
-
-                {recentQuizzes.length === 0 ? (
-                  <p className="empty-message">
-                    No recent quizzes found yet.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {recentQuizzes.map((quiz) => (
-                      <div key={quiz._id} className="activity-item">
-                        <span className="activity-name">
-                          {quiz.title}
-                        </span>
-
-                        <span className="activity-date">
-                          {new Date(quiz.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Recent Submissions */}
-              <div className="activity-card">
-                <h3 className="activity-heading">
-                  <CheckCircle2 className="w-4 h-4 text-[#54626f]" />
-                  <span>Recent Submissions</span>
-                </h3>
-
-                {recentSubmissions.length === 0 ? (
-                  <p className="empty-message">
-                    No quiz submissions yet.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {recentSubmissions.map((sub) => (
-                      <div key={sub._id} className="activity-item">
-                        <span className="activity-name">
-                          {sub.quizId?.title || 'Quiz Assessment'}
-                        </span>
-
-                        <span className="score-badge">
-                          Score: {sub.score}/{sub.totalQuestions}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-            </div>
-          </>
-        )}
-
-      </main>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
