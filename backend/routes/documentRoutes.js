@@ -1,7 +1,13 @@
 import express from 'express';
 import multer from 'multer';
 import fs from 'fs';
-import { uploadDocument, getDocuments, analyzeDocumentAI, deleteDocument } from '../controllers/documentController.js';
+import { 
+  uploadDocument, 
+  getDocuments, 
+  analyzeDocumentAI, 
+  deleteDocument, 
+  chatWithDocumentAI 
+} from '../controllers/documentController.js';
 
 const router = express.Router();
 
@@ -26,5 +32,6 @@ router.get('/:userId', getDocuments);
 router.get('/', getDocuments);
 router.post('/:id/analyze', analyzeDocumentAI);
 router.delete('/:id', deleteDocument);
+router.post('/:id/chat', chatWithDocumentAI);
 
 export default router;

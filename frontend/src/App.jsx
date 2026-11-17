@@ -6,6 +6,9 @@ import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 import Dashboard from './pages/Dashboard/DashboardPage';
 import DocumentListPage from './pages/Documents/DocumentListPage';
+import DocumentDetailPage from './pages/Documents/DocumentDetailPage';
+import FlashcardPage from './pages/Flashcards/FlashcardPage';
+import FlashcardsListPage from './pages/Flashcards/FlashcardsListPage';
 
 export default function App() {
   return (
@@ -28,6 +31,22 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <DocumentListPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/documents/:id" 
+            element={
+              <ProtectedRoute>
+                <DocumentDetailPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/flashcards" 
+            element={
+              <ProtectedRoute>
+                <FlashcardsListPage />
               </ProtectedRoute>
             } 
           />
