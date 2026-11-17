@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import fs from 'fs';
-import { uploadDocument, getDocuments, deleteDocument } from '../controllers/documentController.js';
+import { uploadDocument, getDocuments, analyzeDocumentAI, deleteDocument } from '../controllers/documentController.js';
 
 const router = express.Router();
 
@@ -21,10 +21,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Order matters: /upload must be BEFORE /:userId
 router.post('/upload', upload.single('file'), uploadDocument);
 router.get('/:userId', getDocuments);
 router.get('/', getDocuments);
+router.post('/:id/analyze', analyzeDocumentAI);
 router.delete('/:id', deleteDocument);
 
 export default router;
