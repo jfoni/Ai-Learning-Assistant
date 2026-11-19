@@ -9,6 +9,7 @@ import {
   FileText,
   TrendingUp,
   Target,
+  User,
   LogOut,
   X,
 } from 'lucide-react';
@@ -23,12 +24,21 @@ const NAV_ITEMS = [
   { label: 'Improvement', to: '/improvement', icon: Target },
 ];
 
+const PROFILE_ITEM = {
+  label: 'Profile',
+  to: '/profile',
+  icon: User,
+};
+
 export default function AppSidebar({ isOpen, onClose }) {
   const { isDark } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
 
   if (!isOpen) return null;
+
+  const isProfileActive = location.pathname.startsWith(PROFILE_ITEM.to);
+  const ProfileIcon = PROFILE_ITEM.icon;
 
   const handleLogout = async () => {
     onClose?.();
@@ -114,7 +124,7 @@ export default function AppSidebar({ isOpen, onClose }) {
                   key={item.to}
                   to={item.to}
                   onClick={onClose}
-                  className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-colors ${
+                  className={`flex items-center gap-3.5 px-4 py-3.5 rounded-full transition-colors ${
                     isDark
                       ? isActive
                         ? 'bg-[#2A2F3B] text-[#FFFFFF] font-black border border-[#3E4556] shadow-2xs'
@@ -149,6 +159,44 @@ export default function AppSidebar({ isOpen, onClose }) {
                 </Link>
               );
             })}
+
+            {/* Pill-shaped Profile link that stays neutral by default and highlights only when active or hovered */}
+            <Link
+              to={PROFILE_ITEM.to}
+              onClick={onClose}
+              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-full transition-colors ${
+                isDark
+                  ? isProfileActive
+                    ? 'bg-[#2A2F3B] text-[#FFFFFF] font-black border border-[#3E4556] shadow-2xs'
+                    : 'text-[#E5E7EB] hover:bg-[#222732] hover:text-[#FFFFFF] font-black'
+                  : isProfileActive
+                    ? 'bg-[#54626f] text-white font-extrabold'
+                    : 'text-[#1F2937] hover:bg-[#E2EAEB] hover:text-[#000000] font-extrabold'
+              }`}
+              style={{ fontSize: '18px', lineHeight: 1.3 }}
+            >
+              <ProfileIcon
+                className={`w-5 h-5 shrink-0 ${
+                  isDark
+                    ? isProfileActive
+                      ? 'text-[#FFFFFF]'
+                      : 'text-[#D1D5DB]'
+                    : isProfileActive
+                      ? 'text-white'
+                      : 'text-[#54626f]'
+                }`}
+              />
+              <span
+                className="truncate"
+                style={
+                  isDark
+                    ? { color: '#FFFFFF', fontWeight: 900, fontSize: '18px' }
+                    : undefined
+                }
+              >
+                {PROFILE_ITEM.label}
+              </span>
+            </Link>
           </nav>
         </div>
 
