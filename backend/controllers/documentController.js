@@ -1,4 +1,6 @@
+import mongoose from 'mongoose';
 import Document from '../models/Document.js';
+import ChatHistory from '../models/chatHistory.js';
 import fs from 'fs';
 import { createRequire } from 'module';
 
@@ -6,6 +8,137 @@ const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
 
 const GEMINI_MODEL = 'gemini-3.5-flash-lite';
+
+const toObjectIdIfValid = (value) => {
+  if (!value) return null;
+  const str = String(value).trim();
+  return mongoose.Types.ObjectId.isValid(str) ? new mongoose.Types.ObjectId(str) : null;
+};
+
+const buildHistoryFilter = ({ rawUserId, documentId }) => {
+  const filter = {};
+  const docObjId = toObjectIdIfValid(documentId);
+  if (docObjId) {
+    filter.documentId = docObjId;
+  }
+
+  if (rawUserId) {
+    const cleanUserId = String(rawUserId).trim();
+    const userObjId = toObjectIdIfValid(cleanUserId);
+    filter.userId = userObjId || cleanUserId;
+  }
+
+  return filter;
+};
+
+// Build short session title from first user prompt
+const buildSessionTitle = (text) => {
+  const cleaned = String(text || 'New Chat').replace(/\s+/g, ' ').trim();
+  if (!cleaned) return 'New Chat';
+  return cleaned.length > 36 ? `${cleaned.slice(0, 36)}...` : cleaned;
+};
+
+// Persist a user and assistant exchange inside a specific chat session
+const persistSessionExchange = async ({
+  rawUserId,
+  documentId,
+  sessionId,
+  userContent,
+  assistantContent,
+  relevantChunks = [],
+}) => {
+  if (!rawUserId || !documentId || !sessionId) return;
+
+  const docObjId = toObjectIdIfValid(documentId);
+  if (!docObjId) return;
+
+  const cleanUserId = String(rawUserId).trim();
+  const userObjId = toObjectIdIfValid(cleanUserId);
+  const storedUserId = userObjId || cleanUserId;
+  const cleanSessionId = String(sessionId).trim();
+  const cleanUserText = String(userContent || '').trim();
+  const cleanAssistantText = String(assistantContent || '').trim();
+
+  let historyDoc = await ChatHistory.findOne({
+    userId: storedUserId,
+    documentId: docObjId,
+  });
+
+  if (!historyDoc) {
+    historyDoc = new ChatHistory({
+      userId: storedUserId,
+      documentId: docObjId,
+      sessions: [
+        {
+          sessionId: cleanSessionId,
+          title: buildSessionTitle(cleanUserText),
+          updatedAt: new Date(),
+          messages: [
+            {
+              role: 'user',
+              content: cleanUserText,
+              timestamp: new Date(),
+              relevantChunks,
+            },
+            {
+              role: 'assistant',
+              content: cleanAssistantText,
+              timestamp: new Date(),
+              relevantChunks,
+            },
+          ],
+        },
+      ],
+    });
+    await historyDoc.save();
+    return;
+  }
+
+  const existingSession = historyDoc.sessions.find((s) => s.sessionId === cleanSessionId);
+
+  if (existingSession) {
+    if (!existingSession.title || existingSession.title === 'New Chat') {
+      existingSession.title = buildSessionTitle(cleanUserText);
+    }
+    existingSession.updatedAt = new Date();
+    existingSession.messages.push(
+      {
+        role: 'user',
+        content: cleanUserText,
+        timestamp: new Date(),
+        relevantChunks,
+      },
+      {
+        role: 'assistant',
+        content: cleanAssistantText,
+        timestamp: new Date(),
+        relevantChunks,
+      }
+    );
+  } else {
+    historyDoc.sessions.unshift({
+      sessionId: cleanSessionId,
+      title: buildSessionTitle(cleanUserText),
+      updatedAt: new Date(),
+      messages: [
+        {
+          role: 'user',
+          content: cleanUserText,
+          timestamp: new Date(),
+          relevantChunks,
+        },
+        {
+          role: 'assistant',
+          content: cleanAssistantText,
+          timestamp: new Date(),
+          relevantChunks,
+        },
+      ],
+    });
+  }
+
+  await historyDoc.save();
+};
 
 // Helper function to extract text from uploaded file safely
 const extractTextFromFile = async (document) => {
@@ -213,11 +346,92 @@ export const deleteDocument = async (req, res, next) => {
   }
 };
 
-// AI Chat & Explain Concept Controller
+// Get saved chat sessions and messages for a document
+export const getChatHistory = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const rawUserId = req.query.userId || req.user?.id || req.user?._id;
+    const filter = buildHistoryFilter({ rawUserId, documentId: id });
+
+    if (!filter.documentId) {
+      return res.status(200).json({
+        success: true,
+        data: { sessions: [], messages: [] },
+      });
+    }
+
+    const historyDoc = await ChatHistory.findOne(filter);
+    const sessions = Array.isArray(historyDoc?.sessions)
+      ? [...historyDoc.sessions].sort(
+          (a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0)
+        )
+      : [];
+
+    const latestMessages = sessions[0]?.messages || [];
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        sessions,
+        messages: latestMessages,
+      },
+    });
+  } catch (error) {
+    console.error('Fetch Chat History Error:', error);
+    next(error);
+  }
+};
+
+// Delete a single chat session or clear all sessions for a document
+export const clearChatHistory = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const rawUserId = req.query.userId || req.user?.id || req.user?._id;
+    const { sessionId } = req.query;
+    const filter = buildHistoryFilter({ rawUserId, documentId: id });
+
+    if (filter.documentId) {
+      if (sessionId) {
+        await ChatHistory.findOneAndUpdate(filter, {
+          $pull: { sessions: { sessionId: String(sessionId) } },
+        });
+      } else {
+        await ChatHistory.findOneAndDelete(filter);
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Chat history updated',
+    });
+  } catch (error) {
+    console.error('Clear Chat History Error:', error);
+    next(error);
+  }
+};
+
+// AI Chat & Explain Concept Controller with session-based ChatHistory persistence
 export const chatWithDocumentAI = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { question, mode } = req.body;
+    const { question, displayQuestion, mode, userId, sessionId, skipAi, localAnswer } = req.body;
+    const effectiveUserId = userId || req.user?.uid || req.user?.id || req.user?._id;
+    const activeSessionId = sessionId || `session-${Date.now()}`;
+
+    if (skipAi && localAnswer) {
+      await persistSessionExchange({
+        rawUserId: effectiveUserId,
+        documentId: id,
+        sessionId: activeSessionId,
+        userContent: displayQuestion || question,
+        assistantContent: localAnswer,
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: { answer: localAnswer, sessionId: activeSessionId },
+      });
+    }
 
     if (!question || !question.trim()) {
       return res.status(400).json({ success: false, error: 'Question is required' });
@@ -262,9 +476,17 @@ export const chatWithDocumentAI = async (req, res, next) => {
     const answer =
       apiData?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated.';
 
+    await persistSessionExchange({
+      rawUserId: effectiveUserId,
+      documentId: id,
+      sessionId: activeSessionId,
+      userContent: displayQuestion || question,
+      assistantContent: answer,
+    });
+
     return res.status(200).json({
       success: true,
-      data: { answer },
+      data: { answer, sessionId: activeSessionId },
     });
   } catch (error) {
     console.error('AI Chat Error:', error);

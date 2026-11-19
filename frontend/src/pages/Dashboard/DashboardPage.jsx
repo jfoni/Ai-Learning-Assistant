@@ -232,18 +232,18 @@ export default function DashboardPage() {
             </div>
           </div>
 
-         <Link
-  to="/profile"
-  className="flex items-center space-x-3 self-start md:self-auto bg-white px-4 py-2.5 rounded-3xl border border-[#D5DDE0] shadow-md hover:border-[#54626f] transition"
->
-  <div className="welcome-bubble">
-    Welcome to your profile, <span>{userName}</span>!
-  </div>
+          <Link
+            to="/profile"
+            className="flex items-center space-x-3 self-start md:self-auto bg-white px-4 py-2.5 rounded-3xl border border-[#D5DDE0] shadow-md hover:border-[#54626f] transition"
+          >
+            <div className="welcome-bubble">
+              Welcome to your profile, <span>{userName}</span>!
+            </div>
 
-  <div className="w-11 h-11 rounded-2xl bg-[#e2eaeb] flex items-center justify-center text-2xl shadow-inner">
-    🐱
-  </div>
-</Link>
+            <div className="w-11 h-11 rounded-2xl bg-[#e2eaeb] flex items-center justify-center text-2xl shadow-inner">
+              🐱
+            </div>
+          </Link>
         </header>
 
         {loading ? (

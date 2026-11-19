@@ -26,6 +26,147 @@ import {
 
 const SIDEBAR_SUBTITLE = 'Personal Study Space';
 
+// Strip raw LaTeX dollar signs and trim text
+const cleanSummaryText = (text) =>
+  String(text || '')
+    .replace(/\$([^$]+)\$/g, '$1')
+    .trim();
+
+// Highlight bold, italic, and important terms while keeping uniform text size
+const renderSummaryInline = (text) => {
+  if (!text) return null;
+  const sanitized = cleanSummaryText(text);
+  const tokens = sanitized.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).filter(Boolean);
+
+  return tokens.map((token, idx) => {
+    if (token.startsWith('**') && token.endsWith('**') && token.length > 4) {
+      return (
+        <strong
+          key={idx}
+          className="font-extrabold text-[#1f3b4d] bg-[#e2eaeb] px-1.5 py-0.5 rounded-md"
+        >
+          {token.slice(2, -2)}
+        </strong>
+      );
+    }
+
+    if (token.startsWith('*') && token.endsWith('*') && token.length > 2) {
+      return (
+        <em key={idx} className="italic font-semibold text-[#6b4c35]">
+          {token.slice(1, -1)}
+        </em>
+      );
+    }
+
+    if (/\b(important|key|remember|exam|optimal|heuristic|a\*|greedy)\b/i.test(token)) {
+      return (
+        <span key={idx} className="font-bold text-[#2b6777]">
+          {token}
+        </span>
+      );
+    }
+
+    return <React.Fragment key={idx}>{token}</React.Fragment>;
+  });
+};
+
+// Keep summary card theme colors while rendering a distinct styled ul list
+const SummaryListView = ({ rawText }) => {
+  if (!rawText) return null;
+
+  const lines = String(rawText)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const sectionTitles = [
+    'overview',
+    'key concepts',
+    'important definitions',
+    'exam takeaways',
+    'summary',
+    'main points',
+    'real-life example',
+  ];
+
+  const blocks = [];
+  let bulletItems = [];
+
+  const flushBulletList = (keyPrefix) => {
+    if (bulletItems.length > 0) {
+      blocks.push(
+        <ul
+          key={`${keyPrefix}-summary-ul`}
+          className="my-3 space-y-2 rounded-2xl bg-white border border-[#54626f]/20 border-l-4 border-l-[#2b6777] p-4 list-none m-0"
+        >
+          {bulletItems.map((item, idx) => {
+            const isImportant = /\b(important|key|remember|exam|optimal)\b/i.test(item);
+            return (
+              <li
+                key={idx}
+                className={`flex items-start gap-2.5 text-base leading-relaxed rounded-xl px-2.5 py-1.5 ${
+                  isImportant
+                    ? 'bg-[#e6f2f4] text-[#1f3b4d] font-semibold'
+                    : 'text-[#1F2118]'
+                }`}
+              >
+                <span
+                  className={`mt-2 w-2 h-2 rounded-full shrink-0 ${
+                    isImportant ? 'bg-[#2b6777]' : 'bg-[#6b4c35]'
+                  }`}
+                />
+                <span className="flex-1">{renderSummaryInline(item)}</span>
+              </li>
+            );
+          })}
+        </ul>
+      );
+      bulletItems = [];
+    }
+  };
+
+  lines.forEach((rawLine, idx) => {
+    const cleaned = cleanSummaryText(
+      rawLine.replace(/^\*\*|\*\*$/g, '').replace(/^#+\s*/, '')
+    );
+    if (!cleaned) return;
+
+    const bulletMatch = cleaned.match(/^[-*•]\s+(.+)$/);
+    if (bulletMatch) {
+      bulletItems.push(bulletMatch[1].trim());
+      return;
+    }
+
+    flushBulletList(`before-${idx}`);
+
+    const normalized = cleaned.replace(/:$/, '').toLowerCase();
+    if (sectionTitles.includes(normalized)) {
+      blocks.push(
+        <h4
+          key={`h-${idx}`}
+          className="text-base font-black text-[#1f3b4d] mt-4 mb-1.5"
+        >
+          {cleaned.replace(/:$/, '')}
+        </h4>
+      );
+      return;
+    }
+
+    blocks.push(
+      <p
+        key={`p-${idx}`}
+        className="text-base text-[#1F2118] leading-relaxed my-1.5"
+      >
+        {renderSummaryInline(cleaned)}
+      </p>
+    );
+  });
+
+  flushBulletList('end');
+
+  return <div className="space-y-1">{blocks}</div>;
+};
+
 export default function DocumentListPage() {
   const [userId, setUserId] = useState(null);
   const [documents, setDocuments] = useState([]);
@@ -224,7 +365,7 @@ export default function DocumentListPage() {
 
       <div className="flex-1 p-4 sm:p-6 lg:p-8">
         <div className="max-w-6xl mx-auto space-y-6">
-          {/* Page Header: 3-line on left, Back on right */}
+          {/* Page Header */}
           <div className="bg-white/85 backdrop-blur-md border border-[#54626f]/20 rounded-2xl p-6 shadow-sm flex items-start justify-between gap-4">
             <div className="flex items-start gap-3.5">
               <button
@@ -332,8 +473,8 @@ export default function DocumentListPage() {
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <div className="text-sm text-[#2C3539] whitespace-pre-line leading-relaxed bg-[#e2eaeb]/45 p-4 rounded-xl border border-[#54626f]/10">
-                {aiSummary.summary}
+              <div className="bg-[#e2eaeb]/45 p-4 rounded-xl border border-[#54626f]/10">
+                <SummaryListView rawText={aiSummary.summary} />
               </div>
             </div>
           )}

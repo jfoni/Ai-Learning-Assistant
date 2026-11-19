@@ -3,6 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../services/firebase';
+import StyledChatUl, {
+  cleanDisplayText,
+  renderFormattedInline,
+} from '../../components/StyledChatUl';
 import {
   ArrowLeft,
   Sparkles,
@@ -12,9 +16,14 @@ import {
   Bot,
   User,
   Lightbulb,
+  Plus,
+  History,
+  Trash2,
 } from 'lucide-react';
 
-// Resolve friendly display name from Firebase user profile or email
+const createNewSessionId = () =>
+  `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
 const getUserDisplayName = (user) => {
   if (!user) return '';
   if (user.displayName && user.displayName.trim()) {
@@ -30,53 +39,12 @@ const getUserDisplayName = (user) => {
   return '';
 };
 
-// Strip raw LaTeX dollar signs without altering user-requested content
-const cleanDisplayText = (text) =>
-  String(text || '')
-    .replace(/\$([^$]+)\$/g, '$1')
-    .trim();
-
-// Highlight inline bold and italic segments with distinct accent colors
-const renderFormattedInline = (text, variant = 'default') => {
-  if (!text) return null;
-  const sanitized = cleanDisplayText(text);
-  const tokens = sanitized.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).filter(Boolean);
-
-  const boldClass =
-    variant === 'summary'
-      ? 'font-extrabold text-[#1f3b4d] bg-[#e2eaeb] px-2 py-0.5 rounded-md'
-      : variant === 'list'
-      ? 'font-extrabold text-[#6b4c35] bg-[#6b4c35]/12 px-1.5 py-0.5 rounded-md'
-      : 'font-extrabold text-[#1f3b4d] underline decoration-[#6b4c35]/50 decoration-2 underline-offset-2';
-
-  const italicClass = 'italic font-semibold text-[#6b4c35]';
-
-  return tokens.map((token, idx) => {
-    if (token.startsWith('**') && token.endsWith('**') && token.length > 4) {
-      return (
-        <strong key={idx} className={boldClass}>
-          {token.slice(2, -2)}
-        </strong>
-      );
-    }
-    if (token.startsWith('*') && token.endsWith('*') && token.length > 2) {
-      return (
-        <em key={idx} className={italicClass}>
-          {token.slice(1, -1)}
-        </em>
-      );
-    }
-    return <React.Fragment key={idx}>{token}</React.Fragment>;
-  });
-};
-
-// Render AI chat responses with easy-to-read sizing and distinct styled ul blocks
 const FormattedMarkdownContent = ({ content, isUserMessage = false }) => {
   if (!content) return null;
 
   if (isUserMessage) {
     return (
-      <p className="text-base sm:text-[17px] leading-relaxed whitespace-pre-line font-medium">
+      <p className="text-lg sm:text-xl leading-relaxed whitespace-pre-line font-medium">
         {content}
       </p>
     );
@@ -88,22 +56,7 @@ const FormattedMarkdownContent = ({ content, isUserMessage = false }) => {
 
   const flushBullets = (keyPrefix) => {
     if (bulletBuffer.length > 0) {
-      blocks.push(
-        <ul
-          key={`${keyPrefix}-ul`}
-          className="my-3.5 space-y-2.5 rounded-2xl bg-[#eef4f5] border-l-4 border-[#6b4c35] p-4"
-        >
-          {bulletBuffer.map((bText, bIdx) => (
-            <li
-              key={bIdx}
-              className="flex items-start gap-2.5 text-base sm:text-[17px] text-[#1f3b4d] font-medium leading-relaxed"
-            >
-              <span className="mt-2 w-2.5 h-2.5 rounded-full bg-[#6b4c35] shrink-0" />
-              <span className="flex-1">{renderFormattedInline(bText, 'list')}</span>
-            </li>
-          ))}
-        </ul>
-      );
+      blocks.push(<StyledChatUl key={`${keyPrefix}-chat-ul`} items={bulletBuffer} />);
       bulletBuffer = [];
     }
   };
@@ -118,7 +71,7 @@ const FormattedMarkdownContent = ({ content, isUserMessage = false }) => {
 
     if (/^-{3,}$/.test(line) || /^\*{3,}$/.test(line)) {
       flushBullets(`hr-${idx}`);
-      blocks.push(<hr key={`hr-${idx}`} className="my-4 border-[#54626f]/20" />);
+      blocks.push(<hr key={`hr-${idx}`} className="my-3 border-[#54626f]/20" />);
       return;
     }
 
@@ -130,9 +83,9 @@ const FormattedMarkdownContent = ({ content, isUserMessage = false }) => {
       blocks.push(
         <h4
           key={`h-${idx}`}
-          className="text-lg sm:text-xl font-black text-[#1f3b4d] tracking-tight mt-4 mb-2 flex items-center gap-2 bg-[#e2eaeb]/80 px-3.5 py-2 rounded-xl border-l-4 border-[#54626f]"
+          className="text-xl sm:text-2xl font-black text-[#1f3b4d] tracking-tight mt-3.5 mb-2"
         >
-          <span>{cleanHeading}</span>
+          {cleanHeading}
         </h4>
       );
       return;
@@ -151,19 +104,18 @@ const FormattedMarkdownContent = ({ content, isUserMessage = false }) => {
     blocks.push(
       <p
         key={`p-${idx}`}
-        className="text-base sm:text-[17px] text-[#1F2118] leading-relaxed my-2"
+        className="text-lg sm:text-xl text-[#1F2118] leading-relaxed my-2"
       >
-        {renderFormattedInline(cleanedPara, 'chat')}
+        {renderFormattedInline(cleanedPara)}
       </p>
     );
   });
 
   flushBullets('end');
 
-  return <div className="space-y-1.5">{blocks}</div>;
+  return <div className="space-y-1">{blocks}</div>;
 };
 
-// Parse AI summary text into clean structured sections and styled ul lists
 const parseSummarySections = (rawText) => {
   if (!rawText) return [];
   const lines = String(rawText)
@@ -221,21 +173,38 @@ const parseSummarySections = (rawText) => {
   return sections;
 };
 
-// Detect casual greetings, status checks, and strict single-intent requests
 const handleStrictLocalIntent = (rawInput, userName) => {
   const normalized = String(rawInput || '')
     .toLowerCase()
     .replace(/[!?.,]+$/g, '')
     .trim();
 
-  const greetingWords = ['hi', 'hey', 'hello', 'hii', 'hiii', 'yo', 'sup', 'good morning', 'good afternoon', 'good evening'];
+  const greetingWords = [
+    'hi',
+    'hey',
+    'hello',
+    'hii',
+    'hiii',
+    'yo',
+    'sup',
+    'good morning',
+    'good afternoon',
+    'good evening',
+  ];
   if (greetingWords.includes(normalized)) {
     return userName
       ? `Hello ${userName}! How can I help you today?`
       : 'Hello! How can I help you today?';
   }
 
-  const statusPhrases = ['how are you', 'how r u', 'how are u', 'whats up', "what's up", 'how is it going'];
+  const statusPhrases = [
+    'how are you',
+    'how r u',
+    'how are u',
+    'whats up',
+    "what's up",
+    'how is it going',
+  ];
   if (statusPhrases.includes(normalized)) {
     return userName
       ? `I'm good, ${userName}! How are you? How can I help you?`
@@ -245,18 +214,23 @@ const handleStrictLocalIntent = (rawInput, userName) => {
   return null;
 };
 
-// Build focused prompt so AI answers ONLY what the user asked for without extra sections
 const buildFocusedPrompt = (userText, docTitle, mode) => {
   const lower = String(userText || '').toLowerCase();
-  const baseRule =
-    'Respond strictly to what the user asked for. Do not add extra sections, summaries, or unrequested explanations.';
 
-  if (mode === 'explain' || lower.includes('example')) {
+  if (mode === 'explain') {
+    const focusTopic = userText && userText !== 'Explain Concept' ? userText : docTitle;
+    return [
+      `Document topic: "${docTitle}".`,
+      `Topic to explain: "${focusTopic}".`,
+      'Explain the full concept clearly and simply in easy words, and also include a clear real-life example so it is easy to understand.',
+    ].join(' ');
+  }
+
+  if (lower.includes('example')) {
     return [
       `Document topic: "${docTitle}".`,
       `User request: "${userText}".`,
-      'Give ONLY a clear real-life example on this topic in easy, natural words.',
-      baseRule,
+      'Explain the concept briefly and give a clear real-life example in easy, natural words.',
     ].join(' ');
   }
 
@@ -265,7 +239,6 @@ const buildFocusedPrompt = (userText, docTitle, mode) => {
       `Document topic: "${docTitle}".`,
       `User request: "${userText}".`,
       'List ONLY the key keywords from this topic/document as short bullet points (- ). Do not write extra paragraphs or definitions.',
-      baseRule,
     ].join(' ');
   }
 
@@ -273,16 +246,14 @@ const buildFocusedPrompt = (userText, docTitle, mode) => {
     return [
       `Document topic: "${docTitle}".`,
       `User request: "${userText}".`,
-      'Explain ONLY the main concept clearly and concisely in easy, natural words.',
-      baseRule,
+      'Explain the main concept clearly and completely in easy, natural words with a real-life example.',
     ].join(' ');
   }
 
   return [
     `Document topic: "${docTitle}".`,
     `User request: "${userText}".`,
-    'Answer directly and only what is asked in easy, natural words.',
-    baseRule,
+    'Answer directly and clearly in easy, natural words.',
   ].join(' ');
 };
 
@@ -290,34 +261,73 @@ export default function DocumentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [document, setDocument] = useState(null);
+  const [userId, setUserId] = useState('');
   const [userName, setUserName] = useState('');
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
 
   const [activeTab, setActiveTab] = useState('chat');
+  const [sessions, setSessions] = useState([]);
+  const [activeSessionId, setActiveSessionId] = useState(() => createNewSessionId());
+  const [showHistoryDrawer, setShowHistoryDrawer] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const chatEndRef = useRef(null);
 
+  const refreshSessions = async (uid) => {
+    if (!uid) return [];
+    const historyRes = await axios.get(`http://localhost:8000/api/documents/${id}/chat`, {
+      params: { userId: uid },
+    });
+    const list = Array.isArray(historyRes.data?.data?.sessions)
+      ? historyRes.data.data.sessions
+      : [];
+    setSessions(list);
+    return list;
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
+        setUserId('');
         setUserName('');
+        setSessions([]);
+        setMessages([]);
         setLoading(false);
         return;
       }
 
+      setUserId(user.uid);
       setUserName(getUserDisplayName(user));
 
       try {
-        const res = await axios.get(`http://localhost:8000/api/documents/${user.uid}`);
-        const docs = res.data?.data || [];
+        const [docRes, historyRes] = await Promise.all([
+          axios.get(`http://localhost:8000/api/documents/${user.uid}`),
+          axios.get(`http://localhost:8000/api/documents/${id}/chat`, {
+            params: { userId: user.uid },
+          }),
+        ]);
+
+        const docs = docRes.data?.data || [];
         const found = docs.find((doc) => doc._id === id);
         setDocument(found || null);
+
+        const loadedSessions = Array.isArray(historyRes.data?.data?.sessions)
+          ? historyRes.data.data.sessions
+          : [];
+        setSessions(loadedSessions);
+
+        if (loadedSessions.length > 0) {
+          setActiveSessionId(loadedSessions[0].sessionId);
+          setMessages(loadedSessions[0].messages || []);
+        } else {
+          setActiveSessionId(createNewSessionId());
+          setMessages([]);
+        }
       } catch (err) {
-        console.error('Error fetching document details:', err);
+        console.error('Error fetching document details or chat history:', err);
       } finally {
         setLoading(false);
       }
@@ -330,12 +340,75 @@ export default function DocumentDetailPage() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, chatLoading]);
 
+  // Start a fresh chat session without removing older saved chats
+  const handleNewChat = () => {
+    setActiveTab('chat');
+    setShowHistoryDrawer(false);
+    setActiveSessionId(createNewSessionId());
+    setMessages([]);
+    setInputMessage('');
+  };
+
+  // Switch to a previous chat session from Chat History
+  const handleSelectSession = (session) => {
+    setActiveTab('chat');
+    setShowHistoryDrawer(false);
+    setActiveSessionId(session.sessionId);
+    setMessages(Array.isArray(session.messages) ? session.messages : []);
+  };
+
+  // Delete a single saved chat session from database and update UI state
+  const handleDeleteSession = async (e, targetSessionId) => {
+    e.stopPropagation();
+    if (!targetSessionId) return;
+
+    const updatedSessions = sessions.filter((s) => s.sessionId !== targetSessionId);
+    setSessions(updatedSessions);
+
+    if (targetSessionId === activeSessionId) {
+      if (updatedSessions.length > 0) {
+        setActiveSessionId(updatedSessions[0].sessionId);
+        setMessages(updatedSessions[0].messages || []);
+      } else {
+        setActiveSessionId(createNewSessionId());
+        setMessages([]);
+      }
+    }
+
+    try {
+      await axios.delete(`http://localhost:8000/api/documents/${id}/chat`, {
+        params: { userId, sessionId: targetSessionId },
+      });
+      await refreshSessions(userId);
+    } catch (err) {
+      console.error('Failed to delete chat session:', err);
+    }
+  };
+
+  const saveLocalExchange = async (uid, sessId, userText, assistantText) => {
+    if (!uid) return;
+    try {
+      await axios.post(`http://localhost:8000/api/documents/${id}/chat`, {
+        userId: uid,
+        sessionId: sessId,
+        question: userText,
+        displayQuestion: userText,
+        mode: 'local',
+        skipAi: true,
+        localAnswer: assistantText,
+      });
+      await refreshSessions(uid);
+    } catch (err) {
+      console.error('Failed to save local chat exchange:', err);
+    }
+  };
+
   const handleGenerateSummary = async () => {
     try {
       setAnalyzing(true);
       const res = await axios.post(`http://localhost:8000/api/documents/${id}/analyze`, {
         instruction:
-          'Provide a clear summary of this document with bullet points (- ) and a real-life example where relevant.',
+          'Provide a clear summary of this document in simple, easy words with short bullet points (- ) and a real-life example where relevant.',
       });
       setSummary(res.data?.data?.summary || '');
       setActiveTab('summary');
@@ -352,32 +425,49 @@ export default function DocumentDetailPage() {
     const trimmedInput = inputMessage.trim();
     if (customMode === 'chat' && !trimmedInput) return;
 
+    const currentSessionId = activeSessionId || createNewSessionId();
+    if (!activeSessionId) {
+      setActiveSessionId(currentSessionId);
+    }
+
     const topicLabel = document?.title || 'this document';
     const userDisplayMsg =
-      customMode === 'explain' ? trimmedInput || 'Give a real-life example' : trimmedInput;
+      customMode === 'explain'
+        ? trimmedInput
+          ? `${trimmedInput} — Explain Concept`
+          : 'Explain Concept'
+        : trimmedInput;
 
     setInputMessage('');
     setMessages((prev) => [...prev, { role: 'user', content: userDisplayMsg }]);
 
-    // Handle casual greetings and status questions directly without dumping document summaries
     if (customMode === 'chat') {
       const localReply = handleStrictLocalIntent(trimmedInput, userName);
       if (localReply) {
         setMessages((prev) => [...prev, { role: 'assistant', content: localReply }]);
+        await saveLocalExchange(userId, currentSessionId, userDisplayMsg, localReply);
         return;
       }
     }
 
     setChatLoading(true);
-    const focusedQuestion = buildFocusedPrompt(userDisplayMsg, topicLabel, customMode);
+    const focusedQuestion = buildFocusedPrompt(
+      trimmedInput || 'Explain Concept',
+      topicLabel,
+      customMode
+    );
 
     try {
       const res = await axios.post(`http://localhost:8000/api/documents/${id}/chat`, {
+        userId,
+        sessionId: currentSessionId,
         question: focusedQuestion,
+        displayQuestion: userDisplayMsg,
         mode: customMode,
       });
       const aiReply = res.data?.data?.answer || 'No response generated.';
       setMessages((prev) => [...prev, { role: 'assistant', content: aiReply }]);
+      await refreshSessions(userId);
     } catch (err) {
       console.error('Chat error:', err);
       setMessages((prev) => [
@@ -497,7 +587,7 @@ export default function DocumentDetailPage() {
           </div>
 
           {/* Right Panel: Structured Summary or AI Chat */}
-          <div className="bg-white/95 rounded-2xl p-6 shadow-sm border border-[#54626f]/20 lg:col-span-2 flex flex-col h-[680px]">
+          <div className="bg-white/95 rounded-2xl p-6 shadow-sm border border-[#54626f]/20 lg:col-span-2 flex flex-col h-[680px] relative">
             {activeTab === 'summary' ? (
               <div className="flex-1 overflow-y-auto pr-1">
                 <div className="flex items-center justify-between border-b border-[#54626f]/15 pb-4 mb-5">
@@ -505,8 +595,8 @@ export default function DocumentDetailPage() {
                     <h2 className="text-xl sm:text-2xl font-black text-[#1f3b4d]">
                       AI Study Summary
                     </h2>
-                    <p className="text-sm text-[#54626f] mt-0.5">
-                      Structured study notes &amp; clear points
+                    <p className="text-base sm:text-[17px] text-[#54626f] mt-0.5">
+                      Easy study notes with simple examples and key points
                     </p>
                   </div>
                 </div>
@@ -521,14 +611,16 @@ export default function DocumentDetailPage() {
                     <p className="text-base sm:text-[17px] font-bold text-[#1F2118]">
                       No summary generated yet
                     </p>
-                    <p className="text-sm text-[#54626f] mt-1">
-                      Click &quot;Generate AI Summary&quot; on the left to build structured notes.
+                    <p className="text-base sm:text-[17px] text-[#54626f] mt-1">
+                      Click &quot;Generate AI Summary&quot; on the left to build easy notes.
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {parsedSections.map((sec, sIdx) => {
-                      const bulletsOnly = sec.items.filter((i) => i.type === 'bullet');
+                      const bulletsOnly = sec.items
+                        .filter((i) => i.type === 'bullet')
+                        .map((i) => i.text);
                       const parasOnly = sec.items.filter((i) => i.type !== 'bullet');
 
                       return (
@@ -536,9 +628,8 @@ export default function DocumentDetailPage() {
                           key={sIdx}
                           className="rounded-2xl bg-[#f8fafb] border border-[#54626f]/15 p-5 sm:p-6 space-y-3"
                         >
-                          <h3 className="text-lg sm:text-xl font-black uppercase tracking-wider text-[#1f3b4d] flex items-center gap-2.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#6b4c35]" />
-                            <span>{sec.heading}</span>
+                          <h3 className="text-base sm:text-[17px] font-black uppercase tracking-wider text-[#1f3b4d]">
+                            {sec.heading}
                           </h3>
 
                           {parasOnly.map((pItem, pIdx) => (
@@ -546,25 +637,11 @@ export default function DocumentDetailPage() {
                               key={`p-${pIdx}`}
                               className="text-base sm:text-[17px] text-[#1F2118] leading-relaxed"
                             >
-                              {renderFormattedInline(pItem.text, 'summary')}
+                              {renderFormattedInline(pItem.text)}
                             </p>
                           ))}
 
-                          {bulletsOnly.length > 0 && (
-                            <ul className="mt-2 space-y-2.5 rounded-2xl bg-[#eef4f5] border-l-4 border-[#6b4c35] p-4">
-                              {bulletsOnly.map((bItem, bIdx) => (
-                                <li
-                                  key={bIdx}
-                                  className="flex items-start gap-2.5 text-base sm:text-[17px] text-[#1f3b4d] font-medium leading-relaxed"
-                                >
-                                  <span className="mt-2 w-2.5 h-2.5 rounded-full bg-[#6b4c35] shrink-0" />
-                                  <span className="flex-1">
-                                    {renderFormattedInline(bItem.text, 'list')}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
+                          {bulletsOnly.length > 0 && <StyledChatUl items={bulletsOnly} />}
                         </div>
                       );
                     })}
@@ -573,22 +650,84 @@ export default function DocumentDetailPage() {
               </div>
             ) : (
               <div className="flex flex-col h-full min-h-0">
-                {/* Chat Header */}
-                <div className="flex items-center justify-between border-b border-[#54626f]/15 pb-3.5 mb-4 shrink-0">
+                {/* Chat Header with New Chat & Chat History */}
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#54626f]/15 pb-3.5 mb-4 shrink-0">
                   <div className="flex items-center gap-2.5">
                     <div className="w-9 h-9 rounded-xl bg-[#54626f] text-white flex items-center justify-center">
                       <MessageSquare className="w-4 h-4" />
                     </div>
                     <div>
-                      <h2 className="text-lg sm:text-xl font-black text-[#1f3b4d] leading-tight">
+                      <h2 className="text-lg sm:text-xl font-black text-[#1f3b4d]">
                         Chat with this Document
                       </h2>
-                      <p className="text-xs sm:text-sm text-[#54626f]/75 font-medium">
-                        Ask anything &amp; get focused answers
+                      <p className="text-sm text-[#54626f]/75 font-medium">
+                        Ask anything &amp; get easy answers
                       </p>
                     </div>
                   </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleNewChat}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#54626f] text-white hover:bg-[#1F2118] transition cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>New Chat</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowHistoryDrawer((prev) => !prev)}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#e2eaeb] text-[#1f3b4d] hover:bg-[#d2dee0] transition cursor-pointer"
+                    >
+                      <History className="w-3.5 h-3.5 text-[#2b6777]" />
+                      <span>Chat History ({Number(sessions.length)})</span>
+                    </button>
+                  </div>
                 </div>
+
+                {/* Chat History Dropdown Panel */}
+                {showHistoryDrawer && (
+                  <div className="mb-3 p-3 rounded-2xl bg-[#f8fafb] border border-[#54626f]/20 max-h-48 overflow-y-auto shrink-0">
+                    <p className="text-xs font-black uppercase tracking-wider text-[#1f3b4d] mb-2">
+                      Saved Chats for this Document
+                    </p>
+                    {sessions.length === 0 ? (
+                      <p className="text-sm text-[#54626f]">No saved chats yet.</p>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {sessions.map((s) => {
+                          const isCurrent = s.sessionId === activeSessionId;
+                          return (
+                            <div
+                              key={s.sessionId}
+                              onClick={() => handleSelectSession(s)}
+                              className={`w-full text-left px-3 py-2 rounded-xl text-sm flex items-center justify-between gap-2 transition cursor-pointer ${
+                                isCurrent
+                                  ? 'bg-[#e6f2f4] text-[#1f3b4d] font-bold border border-[#2b6777]/30'
+                                  : 'bg-white text-[#1F2118] hover:bg-[#e2eaeb]/60 border border-[#54626f]/10'
+                              }`}
+                            >
+                              <span className="truncate flex-1">{s.title || 'Untitled Chat'}</span>
+                              <span className="text-xs text-[#54626f] shrink-0">
+                                {Number(s.messages?.length || 0)} msgs
+                              </span>
+                              <button
+                                type="button"
+                                title="Delete chat"
+                                onClick={(e) => handleDeleteSession(e, s.sessionId)}
+                                className="p-1.5 rounded-lg text-[#54626f] hover:text-red-700 hover:bg-red-50 transition cursor-pointer shrink-0"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Messages Scroll Area */}
                 <div className="flex-1 overflow-y-auto space-y-4 pr-1 mb-4 bg-[#e2eaeb]/35 p-4 rounded-2xl border border-[#54626f]/10">
@@ -598,10 +737,10 @@ export default function DocumentDetailPage() {
                         <Bot className="w-6 h-6" />
                       </div>
                       <p className="text-base sm:text-[17px] font-bold text-[#1F2118]">
-                        Start a conversation about this document
+                        Start a new chat about this document
                       </p>
                       <p className="text-sm text-[#54626f]/75 mt-1 max-w-sm">
-                        Say hi, ask for keywords, request the main concept, or ask for a real-life example.
+                        Say hi, ask for keywords, request the main concept, or ask for an easy example.
                       </p>
                     </div>
                   ) : (

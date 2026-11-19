@@ -1,12 +1,14 @@
 import express from 'express';
 import multer from 'multer';
 import fs from 'fs';
-import { 
-  uploadDocument, 
-  getDocuments, 
-  analyzeDocumentAI, 
-  deleteDocument, 
-  chatWithDocumentAI 
+import {
+  uploadDocument,
+  getDocuments,
+  analyzeDocumentAI,
+  deleteDocument,
+  chatWithDocumentAI,
+  getChatHistory,
+  clearChatHistory,
 } from '../controllers/documentController.js';
 
 const router = express.Router();
@@ -22,7 +24,7 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     cb(null, uniqueSuffix + '-' + file.originalname);
-  }
+  },
 });
 
 const upload = multer({ storage: storage });
@@ -32,6 +34,8 @@ router.get('/:userId', getDocuments);
 router.get('/', getDocuments);
 router.post('/:id/analyze', analyzeDocumentAI);
 router.delete('/:id', deleteDocument);
+router.get('/:id/chat', getChatHistory);
 router.post('/:id/chat', chatWithDocumentAI);
+router.delete('/:id/chat', clearChatHistory);
 
 export default router;

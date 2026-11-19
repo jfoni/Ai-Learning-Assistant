@@ -10,6 +10,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '../../services/firebase';
 import { getDashboardOverview } from '../../services/dashboardService';
+import { useTheme } from '../../context/ThemeContext';
 import {
   BookOpen,
   BrainCircuit,
@@ -33,16 +34,13 @@ import {
 } from 'lucide-react';
 
 const SIDEBAR_SUBTITLE = 'Personal Study Space';
-const THEME_STORAGE_KEY = 'ai_assistant_theme_mode';
 
 export default function ProfilePage() {
+  const { isDark, setTheme } = useTheme();
+
   const [user, setUser] = useState(null);
   const [displayName, setDisplayName] = useState('');
   const [savingName, setSavingName] = useState(false);
-
-  const [themeMode, setThemeMode] = useState(() => {
-    return localStorage.getItem(THEME_STORAGE_KEY) || 'light';
-  });
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -95,10 +93,11 @@ export default function ProfilePage() {
   }, [navigate]);
 
   const handleThemeChange = (mode) => {
-    setThemeMode(mode);
-    localStorage.setItem(THEME_STORAGE_KEY, mode);
+    setTheme(mode);
     setStatusMessage(
-      mode === 'dark' ? 'Dark mode selected.' : 'Light mode selected.'
+      mode === 'dark'
+        ? 'Dark mode enabled across the app.'
+        : 'Light mode enabled across the app.'
     );
     setErrorMessage('');
   };
@@ -180,8 +179,6 @@ export default function ProfilePage() {
     setIsSidebarOpen(false);
   };
 
-  const isDark = themeMode === 'dark';
-
   const lastSignInDate = user?.metadata?.lastSignInTime
     ? new Date(user.metadata.lastSignInTime).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -205,7 +202,7 @@ export default function ProfilePage() {
       value: lastSignInDate,
       badge: 'Security',
       badgeClass: 'bg-[#2b6777]/12 text-[#2b6777]',
-      rowClass: isDark ? 'bg-[#1c2329]' : 'bg-[#f4f9fa]',
+      rowClass: isDark ? 'bg-[#14181C]' : 'bg-[#f4f9fa]',
     },
     {
       id: 'theme-status',
@@ -213,7 +210,7 @@ export default function ProfilePage() {
       value: isDark ? 'Dark Mode' : 'Light Mode',
       badge: 'Appearance',
       badgeClass: 'bg-[#b87d4b]/16 text-[#8c5a2b]',
-      rowClass: isDark ? 'bg-[#1c2329]' : 'bg-[#fbf7f3]',
+      rowClass: isDark ? 'bg-[#14181C]' : 'bg-[#fbf7f3]',
     },
     {
       id: 'member-status',
@@ -221,7 +218,7 @@ export default function ProfilePage() {
       value: createdDate,
       badge: 'Account',
       badgeClass: 'bg-[#4a7c59]/14 text-[#2f553a]',
-      rowClass: isDark ? 'bg-[#1c2329]' : 'bg-[#f5f9f6]',
+      rowClass: isDark ? 'bg-[#14181C]' : 'bg-[#f5f9f6]',
     },
     {
       id: 'accuracy-status',
@@ -229,18 +226,18 @@ export default function ProfilePage() {
       value: `${Number(stats.averageScore)}%`,
       badge: 'Progress',
       badgeClass: 'bg-[#54626f]/14 text-[#3f4b56]',
-      rowClass: isDark ? 'bg-[#1c2329]' : 'bg-[#f5f8f9]',
+      rowClass: isDark ? 'bg-[#14181C]' : 'bg-[#f5f8f9]',
     },
   ];
 
   const sidebarNavClass = `flex items-center gap-3 px-4 py-3 rounded-2xl text-base font-extrabold transition ${
-    isDark ? 'hover:bg-[#2f3a44]' : 'text-[#1f2937] hover:bg-[#e2eaeb]'
+    isDark ? 'hover:bg-[#262E37] text-[#E8ECEF]' : 'text-[#1f2937] hover:bg-[#e2eaeb]'
   }`;
 
   return (
     <div
       className={`min-h-screen flex relative transition-colors ${
-        isDark ? 'bg-[#1c2329] text-[#eef2f5]' : 'bg-[#e2eaeb] text-[#1f2933]'
+        isDark ? 'bg-[#14181C] text-[#E8ECEF]' : 'bg-[#e2eaeb] text-[#1f2933]'
       }`}
     >
       {isSidebarOpen && (
@@ -255,7 +252,7 @@ export default function ProfilePage() {
         <aside
           className={`fixed md:static top-0 left-0 h-screen md:h-auto w-64 border-r p-6 flex flex-col justify-between shadow-lg z-40 shrink-0 ${
             isDark
-              ? 'bg-[#242d35] border-[#36424d] text-[#eef2f5]'
+              ? 'bg-[#1E242B] border-[#303A46] text-[#E8ECEF]'
               : 'bg-white border-[#d5dde0] text-[#1f2933]'
           }`}
         >
@@ -315,7 +312,7 @@ export default function ProfilePage() {
           </div>
 
           <div
-            className={`pt-6 border-t ${isDark ? 'border-[#36424d]' : 'border-[#d5dde0]'}`}
+            className={`pt-6 border-t ${isDark ? 'border-[#303A46]' : 'border-[#d5dde0]'}`}
           >
             <button
               type="button"
@@ -335,7 +332,7 @@ export default function ProfilePage() {
           <div
             className={`rounded-2xl p-6 border shadow-xs flex items-start justify-between gap-4 ${
               isDark
-                ? 'bg-[#242d35] border-[#36424d]'
+                ? 'bg-[#1E242B] border-[#303A46]'
                 : 'bg-white/95 border-[#54626f]/15'
             }`}
           >
@@ -346,7 +343,7 @@ export default function ProfilePage() {
                 aria-label="Toggle navigation menu"
                 className={`w-11 h-11 rounded-xl flex items-center justify-center transition shrink-0 mt-0.5 cursor-pointer ${
                   isDark
-                    ? 'bg-[#2f3a44] text-[#eef2f5] hover:bg-[#54626f]'
+                    ? 'bg-[#262E37] text-[#E8ECEF] hover:bg-[#54626f]'
                     : 'bg-[#e2eaeb] text-[#1f2937] hover:bg-[#54626f] hover:text-white'
                 }`}
               >
@@ -359,7 +356,7 @@ export default function ProfilePage() {
                 </h1>
                 <p
                   className={`text-base mt-1 ${
-                    isDark ? 'text-[#a8b6c2]' : 'text-[#54626f]'
+                    isDark ? 'text-[#9AA6B2]' : 'text-[#54626f]'
                   }`}
                 >
                   Manage your account information, theme preference, and password.
@@ -372,7 +369,7 @@ export default function ProfilePage() {
               onClick={() => navigate('/dashboard')}
               className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold transition shrink-0 cursor-pointer ${
                 isDark
-                  ? 'bg-[#2f3a44] text-[#eef2f5] hover:bg-[#54626f]'
+                  ? 'bg-[#262E37] text-[#E8ECEF] hover:bg-[#54626f]'
                   : 'bg-[#e2eaeb] text-[#1f2937] hover:bg-[#54626f] hover:text-white'
               }`}
             >
@@ -402,7 +399,7 @@ export default function ProfilePage() {
               onSubmit={handleProfileSave}
               className={`rounded-2xl p-6 border shadow-xs space-y-5 ${
                 isDark
-                  ? 'bg-[#242d35] border-[#36424d]'
+                  ? 'bg-[#1E242B] border-[#303A46]'
                   : 'bg-white/95 border-[#54626f]/15'
               }`}
             >
@@ -416,7 +413,7 @@ export default function ProfilePage() {
                   <h2 className="text-xl font-black">Profile Information</h2>
                   <p
                     className={`text-sm font-semibold ${
-                      isDark ? 'text-[#a8b6c2]' : 'text-[#54626f]'
+                      isDark ? 'text-[#9AA6B2]' : 'text-[#54626f]'
                     }`}
                   >
                     Joined on {createdDate}
@@ -435,7 +432,7 @@ export default function ProfilePage() {
                     onChange={(e) => setDisplayName(e.target.value)}
                     className={`w-full px-4 py-3 rounded-xl border text-base font-semibold focus:outline-none ${
                       isDark
-                        ? 'bg-[#1c2329] border-[#36424d] text-[#eef2f5]'
+                        ? 'bg-[#14181C] border-[#303A46] text-[#E8ECEF]'
                         : 'bg-[#f8fafb] border-[#54626f]/20 text-[#1f2933]'
                     }`}
                   />
@@ -448,7 +445,7 @@ export default function ProfilePage() {
                   <div
                     className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border text-base font-semibold ${
                       isDark
-                        ? 'bg-[#1c2329]/70 border-[#36424d] text-[#a8b6c2]'
+                        ? 'bg-[#14181C]/70 border-[#303A46] text-[#9AA6B2]'
                         : 'bg-[#f1f5f7] border-[#e2eaeb] text-[#4a5560]'
                     }`}
                   >
@@ -461,7 +458,7 @@ export default function ProfilePage() {
               <div className="grid grid-cols-3 gap-2.5 pt-1 text-center">
                 <div
                   className={`p-3.5 rounded-xl ${
-                    isDark ? 'bg-[#1c2329]' : 'bg-[#f5f8f9]'
+                    isDark ? 'bg-[#14181C]' : 'bg-[#f5f8f9]'
                   }`}
                 >
                   <p className="text-lg font-black">{Number(stats.totalFlashcards)}</p>
@@ -469,7 +466,7 @@ export default function ProfilePage() {
                 </div>
                 <div
                   className={`p-3.5 rounded-xl ${
-                    isDark ? 'bg-[#1c2329]' : 'bg-[#f5f8f9]'
+                    isDark ? 'bg-[#14181C]' : 'bg-[#f5f8f9]'
                   }`}
                 >
                   <p className="text-lg font-black">{Number(stats.totalDocuments)}</p>
@@ -477,7 +474,7 @@ export default function ProfilePage() {
                 </div>
                 <div
                   className={`p-3.5 rounded-xl ${
-                    isDark ? 'bg-[#1c2329]' : 'bg-[#f5f8f9]'
+                    isDark ? 'bg-[#14181C]' : 'bg-[#f5f8f9]'
                   }`}
                 >
                   <p className="text-lg font-black">{Number(stats.totalQuizzes)}</p>
@@ -498,7 +495,7 @@ export default function ProfilePage() {
             <div
               className={`rounded-2xl p-6 border shadow-xs flex flex-col justify-between space-y-5 ${
                 isDark
-                  ? 'bg-[#242d35] border-[#36424d]'
+                  ? 'bg-[#1E242B] border-[#303A46]'
                   : 'bg-white/95 border-[#54626f]/15'
               }`}
             >
@@ -511,7 +508,7 @@ export default function ProfilePage() {
                     <h2 className="text-xl font-black">Theme Preference</h2>
                     <p
                       className={`text-sm font-semibold ${
-                        isDark ? 'text-[#a8b6c2]' : 'text-[#54626f]'
+                        isDark ? 'text-[#9AA6B2]' : 'text-[#54626f]'
                       }`}
                     >
                       Choose between Light Mode and Dark Mode
@@ -526,7 +523,7 @@ export default function ProfilePage() {
                     className={`p-4 rounded-2xl border text-left transition cursor-pointer ${
                       !isDark
                         ? 'bg-[#e2eaeb] border-[#54626f] text-[#1f2933]'
-                        : 'bg-[#1c2329] border-[#36424d] text-[#a8b6c2] hover:border-[#54626f]'
+                        : 'bg-[#14181C] border-[#303A46] text-[#9AA6B2] hover:border-[#54626f]'
                     }`}
                   >
                     <div className="flex items-center gap-2 font-black text-base">
@@ -543,12 +540,12 @@ export default function ProfilePage() {
                     onClick={() => handleThemeChange('dark')}
                     className={`p-4 rounded-2xl border text-left transition cursor-pointer ${
                       isDark
-                        ? 'bg-[#2f3a44] border-[#2b6777] text-[#eef2f5]'
+                        ? 'bg-[#262E37] border-[#8FA6B8] text-[#E8ECEF]'
                         : 'bg-[#f8fafb] border-[#e2eaeb] text-[#1f2933] hover:border-[#54626f]'
                     }`}
                   >
                     <div className="flex items-center gap-2 font-black text-base">
-                      <Moon className="w-4 h-4 text-[#2b6777]" />
+                      <Moon className="w-4 h-4 text-[#8FA6B8]" />
                       <span>Dark Mode</span>
                     </div>
                     <p className="text-xs font-medium mt-1 opacity-80">
@@ -581,7 +578,7 @@ export default function ProfilePage() {
               <div
                 className={`p-3.5 rounded-2xl border text-sm font-semibold flex items-center justify-between ${
                   isDark
-                    ? 'bg-[#1c2329] border-[#36424d] text-[#a8b6c2]'
+                    ? 'bg-[#14181C] border-[#303A46] text-[#9AA6B2]'
                     : 'bg-[#f5f8f9] border-[#e2eaeb] text-[#4a5560]'
                 }`}
               >
@@ -599,7 +596,7 @@ export default function ProfilePage() {
             onSubmit={handlePasswordChange}
             className={`rounded-2xl p-6 border shadow-xs space-y-5 ${
               isDark
-                ? 'bg-[#242d35] border-[#36424d]'
+                ? 'bg-[#1E242B] border-[#303A46]'
                 : 'bg-white/95 border-[#54626f]/15'
             }`}
           >
@@ -612,7 +609,7 @@ export default function ProfilePage() {
                   <h2 className="text-xl font-black">Settings &amp; Password</h2>
                   <p
                     className={`text-sm font-semibold ${
-                      isDark ? 'text-[#a8b6c2]' : 'text-[#54626f]'
+                      isDark ? 'text-[#9AA6B2]' : 'text-[#54626f]'
                     }`}
                   >
                     Last password / security update: {lastSignInDate}
@@ -638,7 +635,7 @@ export default function ProfilePage() {
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     className={`w-full pl-4 pr-11 py-3 rounded-xl border text-base font-medium focus:outline-none ${
                       isDark
-                        ? 'bg-[#1c2329] border-[#36424d] text-[#eef2f5]'
+                        ? 'bg-[#14181C] border-[#303A46] text-[#E8ECEF]'
                         : 'bg-[#f8fafb] border-[#54626f]/20 text-[#1f2933]'
                     }`}
                   />
@@ -670,7 +667,7 @@ export default function ProfilePage() {
                     onChange={(e) => setNewPassword(e.target.value)}
                     className={`w-full pl-4 pr-11 py-3 rounded-xl border text-base font-medium focus:outline-none ${
                       isDark
-                        ? 'bg-[#1c2329] border-[#36424d] text-[#eef2f5]'
+                        ? 'bg-[#14181C] border-[#303A46] text-[#E8ECEF]'
                         : 'bg-[#f8fafb] border-[#54626f]/20 text-[#1f2933]'
                     }`}
                   />
@@ -702,7 +699,7 @@ export default function ProfilePage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className={`w-full pl-4 pr-11 py-3 rounded-xl border text-base font-medium focus:outline-none ${
                       isDark
-                        ? 'bg-[#1c2329] border-[#36424d] text-[#eef2f5]'
+                        ? 'bg-[#14181C] border-[#303A46] text-[#E8ECEF]'
                         : 'bg-[#f8fafb] border-[#54626f]/20 text-[#1f2933]'
                     }`}
                   />
