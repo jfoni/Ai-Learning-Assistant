@@ -113,13 +113,6 @@ export default function DashboardPage() {
   const completion = Math.min((Number(stats.totalDocuments) || 0) * 20, 100);
   const accuracy = Math.min(Math.max(Number(stats.averageScore) || 0, 0), 100);
 
-  const improvementMessage =
-    Number(stats.totalSubmissions) === 0
-      ? 'Take a quiz to unlock personalized improvement insights based on your score.'
-      : accuracy < 70
-      ? `Current average score is ${accuracy}%. Focus on weak concepts with flashcards and retake quizzes.`
-      : `Current average score is ${accuracy}%. Keep practicing harder questions to push your accuracy higher.`;
-
   return (
     <div className="dashboard-page min-h-screen bg-[#e2eaeb] flex font-sans relative">
       {/* Backdrop when sidebar is open */}
@@ -319,29 +312,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Improvement Section */}
-            <div className="improvement-card">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-[#54626f]/15 text-[#54626f] flex items-center justify-center">
-                    <Target className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="section-heading">Improvement</h3>
-                    <p className="section-description">
-                      Score-based areas to focus on next
-                    </p>
-                  </div>
-                </div>
-
-                <span className="progress-badge">Score: {stats.averageScore}%</span>
-              </div>
-
-              <p className="text-sm font-semibold text-[#1F2937] bg-[#F4F6F7] border border-[#E5E7EB] rounded-2xl p-4">
-                {improvementMessage}
-              </p>
             </div>
 
             {/* Recent Activity */}
