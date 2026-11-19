@@ -1,26 +1,27 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api/documents';
+const API_BASE = 'http://localhost:8000/api/documents';
 
 export const fetchDocuments = async (userId) => {
-  const url = userId ? `${API_BASE_URL}/${userId}` : `${API_BASE_URL}`;
-  const response = await axios.get(url);
-  return response.data.data;
+  const res = await axios.get(`${API_BASE}/${userId}`);
+  return res.data?.data || [];
 };
 
 export const uploadDocument = async (formData) => {
-  const response = await axios.post(`${API_BASE_URL}/upload`, formData, {
+  const res = await axios.post(`${API_BASE}/upload`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
-  return response.data.data;
+  return res.data?.data;
 };
 
-export const analyzeDocument = async (id) => {
-  const response = await axios.post(`${API_BASE_URL}/${id}/analyze`);
-  return response.data.data.summary;
+export const analyzeDocument = async (docId, instruction = '') => {
+  const res = await axios.post(`${API_BASE}/${docId}/analyze`, {
+    instruction,
+  });
+  return res.data?.data?.summary || '';
 };
 
-export const deleteDocument = async (id) => {
-  const response = await axios.delete(`${API_BASE_URL}/${id}`);
-  return response.data;
+export const deleteDocument = async (docId) => {
+  const res = await axios.delete(`${API_BASE}/${docId}`);
+  return res.data;
 };

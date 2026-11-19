@@ -230,7 +230,7 @@ export default function ProfilePage() {
     },
   ];
 
-  const sidebarNavClass = `flex items-center gap-3 px-4 py-3 rounded-2xl text-base font-extrabold transition ${
+  const sidebarNavClass = `flex items-center gap-3 px-4 py-3 rounded-2xl font-extrabold transition ${
     isDark ? 'hover:bg-[#262E37] text-[#E8ECEF]' : 'text-[#1f2937] hover:bg-[#e2eaeb]'
   }`;
 
@@ -239,6 +239,7 @@ export default function ProfilePage() {
       className={`min-h-screen flex relative transition-colors ${
         isDark ? 'bg-[#14181C] text-[#E8ECEF]' : 'bg-[#e2eaeb] text-[#1f2933]'
       }`}
+      style={{ fontSize: '18px' }}
     >
       {isSidebarOpen && (
         <div
@@ -250,7 +251,7 @@ export default function ProfilePage() {
 
       {isSidebarOpen && (
         <aside
-          className={`fixed md:static top-0 left-0 h-screen md:h-auto w-64 border-r p-6 flex flex-col justify-between shadow-lg z-40 shrink-0 ${
+          className={`fixed md:static top-0 left-0 h-screen md:h-auto w-72 border-r p-6 flex flex-col justify-between shadow-lg z-40 shrink-0 ${
             isDark
               ? 'bg-[#1E242B] border-[#303A46] text-[#E8ECEF]'
               : 'bg-white border-[#d5dde0] text-[#1f2933]'
@@ -263,8 +264,13 @@ export default function ProfilePage() {
                   <BookOpen className="w-5 h-5" />
                 </div>
                 <div>
-                  <h1 className="font-black text-xl tracking-tight">AI Assistant</h1>
-                  <p className="text-[11px] font-black tracking-wider uppercase text-[#54626f]">
+                  <h1 className="font-black tracking-tight" style={{ fontSize: '22px' }}>
+                    AI Assistant
+                  </h1>
+                  <p
+                    className="font-black tracking-wider uppercase text-[#54626f]"
+                    style={{ fontSize: '13px' }}
+                  >
                     {SIDEBAR_SUBTITLE}
                   </p>
                 </div>
@@ -275,37 +281,63 @@ export default function ProfilePage() {
                 aria-label="Close sidebar"
                 className="p-2 rounded-xl text-[#54626f] hover:bg-[#e2eaeb] transition cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             <nav className="space-y-2">
-              <Link to="/dashboard" onClick={closeSidebar} className={sidebarNavClass}>
-                <TrendingUp className="w-4 h-4" />
+              <Link
+                to="/dashboard"
+                onClick={closeSidebar}
+                className={sidebarNavClass}
+                style={{ fontSize: '18px' }}
+              >
+                <TrendingUp className="w-5 h-5" />
                 <span>Overview</span>
               </Link>
-              <Link to="/documents" onClick={closeSidebar} className={sidebarNavClass}>
-                <FileText className="w-4 h-4" />
+              <Link
+                to="/documents"
+                onClick={closeSidebar}
+                className={sidebarNavClass}
+                style={{ fontSize: '18px' }}
+              >
+                <FileText className="w-5 h-5" />
                 <span>Documents</span>
               </Link>
-              <Link to="/flashcards" onClick={closeSidebar} className={sidebarNavClass}>
-                <BrainCircuit className="w-4 h-4" />
+              <Link
+                to="/flashcards"
+                onClick={closeSidebar}
+                className={sidebarNavClass}
+                style={{ fontSize: '18px' }}
+              >
+                <BrainCircuit className="w-5 h-5" />
                 <span>Flashcards</span>
               </Link>
-              <Link to="/quizzes" onClick={closeSidebar} className={sidebarNavClass}>
-                <BookOpen className="w-4 h-4" />
+              <Link
+                to="/quizzes"
+                onClick={closeSidebar}
+                className={sidebarNavClass}
+                style={{ fontSize: '18px' }}
+              >
+                <BookOpen className="w-5 h-5" />
                 <span>Quizzes</span>
               </Link>
-              <Link to="/improvement" onClick={closeSidebar} className={sidebarNavClass}>
-                <Target className="w-4 h-4" />
+              <Link
+                to="/improvement"
+                onClick={closeSidebar}
+                className={sidebarNavClass}
+                style={{ fontSize: '18px' }}
+              >
+                <Target className="w-5 h-5" />
                 <span>Improvement</span>
               </Link>
               <Link
                 to="/profile"
                 onClick={closeSidebar}
-                className="flex items-center gap-3 px-4 py-3 rounded-2xl text-base font-extrabold bg-[#54626f] text-white transition"
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl font-extrabold bg-[#54626f] text-white transition"
+                style={{ fontSize: '18px' }}
               >
-                <User className="w-4 h-4" />
+                <User className="w-5 h-5" />
                 <span>Profile</span>
               </Link>
             </nav>
@@ -317,9 +349,10 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#fef2f2] text-[#dc2626] hover:bg-[#fee2e2] rounded-2xl text-sm font-bold transition cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#fef2f2] text-[#dc2626] hover:bg-[#fee2e2] rounded-2xl font-bold transition cursor-pointer"
+              style={{ fontSize: '18px' }}
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-5 h-5" />
               <span>Sign Out</span>
             </button>
           </div>
@@ -351,13 +384,17 @@ export default function ProfilePage() {
               </button>
 
               <div>
-                <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
+                <h1
+                  className="font-black tracking-tight"
+                  style={{ fontSize: '36px', lineHeight: 1.15 }}
+                >
                   Profile &amp; Settings
                 </h1>
                 <p
-                  className={`text-base mt-1 ${
+                  className={`mt-1.5 font-medium ${
                     isDark ? 'text-[#9AA6B2]' : 'text-[#54626f]'
                   }`}
+                  style={{ fontSize: '19px' }}
                 >
                   Manage your account information, theme preference, and password.
                 </p>
@@ -367,11 +404,12 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => navigate('/dashboard')}
-              className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold transition shrink-0 cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold transition shrink-0 cursor-pointer ${
                 isDark
                   ? 'bg-[#262E37] text-[#E8ECEF] hover:bg-[#54626f]'
                   : 'bg-[#e2eaeb] text-[#1f2937] hover:bg-[#54626f] hover:text-white'
               }`}
+              style={{ fontSize: '17px' }}
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Dashboard</span>
@@ -380,14 +418,20 @@ export default function ProfilePage() {
 
           {/* Feedback Banner */}
           {statusMessage && (
-            <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-emerald-100 text-emerald-900 text-sm font-extrabold">
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <div
+              className="flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-emerald-100 text-emerald-900 font-extrabold"
+              style={{ fontSize: '18px' }}
+            >
+              <CheckCircle2 className="w-5 h-5 shrink-0" />
               <span>{statusMessage}</span>
             </div>
           )}
 
           {errorMessage && (
-            <div className="px-4 py-3.5 rounded-2xl bg-rose-100 text-rose-800 text-sm font-extrabold">
+            <div
+              className="px-4 py-3.5 rounded-2xl bg-rose-100 text-rose-800 font-extrabold"
+              style={{ fontSize: '18px' }}
+            >
               {errorMessage}
             </div>
           )}
@@ -410,11 +454,14 @@ export default function ProfilePage() {
                   </span>
                 </div>
                 <div>
-                  <h2 className="text-xl font-black">Profile Information</h2>
+                  <h2 className="font-black" style={{ fontSize: '24px' }}>
+                    Profile Information
+                  </h2>
                   <p
-                    className={`text-sm font-semibold ${
+                    className={`font-semibold ${
                       isDark ? 'text-[#9AA6B2]' : 'text-[#54626f]'
                     }`}
+                    style={{ fontSize: '17px' }}
                   >
                     Joined on {createdDate}
                   </p>
@@ -423,33 +470,41 @@ export default function ProfilePage() {
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f] mb-1.5">
+                  <label
+                    className="block font-extrabold uppercase tracking-wider text-[#54626f] mb-1.5"
+                    style={{ fontSize: '15px' }}
+                  >
                     Display Name
                   </label>
                   <input
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className={`w-full px-4 py-3 rounded-xl border text-base font-semibold focus:outline-none ${
+                    className={`w-full px-4 py-3 rounded-xl border font-semibold focus:outline-none ${
                       isDark
                         ? 'bg-[#14181C] border-[#303A46] text-[#E8ECEF]'
                         : 'bg-[#f8fafb] border-[#54626f]/20 text-[#1f2933]'
                     }`}
+                    style={{ fontSize: '18px' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f] mb-1.5">
+                  <label
+                    className="block font-extrabold uppercase tracking-wider text-[#54626f] mb-1.5"
+                    style={{ fontSize: '15px' }}
+                  >
                     Email Address
                   </label>
                   <div
-                    className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border text-base font-semibold ${
+                    className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border font-semibold ${
                       isDark
                         ? 'bg-[#14181C]/70 border-[#303A46] text-[#9AA6B2]'
                         : 'bg-[#f1f5f7] border-[#e2eaeb] text-[#4a5560]'
                     }`}
+                    style={{ fontSize: '18px' }}
                   >
-                    <Mail className="w-4 h-4 text-[#54626f]" />
+                    <Mail className="w-5 h-5 text-[#54626f]" />
                     <span>{user?.email || 'No email linked'}</span>
                   </div>
                 </div>
@@ -461,31 +516,44 @@ export default function ProfilePage() {
                     isDark ? 'bg-[#14181C]' : 'bg-[#f5f8f9]'
                   }`}
                 >
-                  <p className="text-lg font-black">{Number(stats.totalFlashcards)}</p>
-                  <p className="text-xs font-bold text-[#54626f]">Flashcards</p>
+                  <p className="font-black" style={{ fontSize: '24px' }}>
+                    {Number(stats.totalFlashcards)}
+                  </p>
+                  <p className="font-bold text-[#54626f]" style={{ fontSize: '15px' }}>
+                    Flashcards
+                  </p>
                 </div>
                 <div
                   className={`p-3.5 rounded-xl ${
                     isDark ? 'bg-[#14181C]' : 'bg-[#f5f8f9]'
                   }`}
                 >
-                  <p className="text-lg font-black">{Number(stats.totalDocuments)}</p>
-                  <p className="text-xs font-bold text-[#54626f]">Documents</p>
+                  <p className="font-black" style={{ fontSize: '24px' }}>
+                    {Number(stats.totalDocuments)}
+                  </p>
+                  <p className="font-bold text-[#54626f]" style={{ fontSize: '15px' }}>
+                    Documents
+                  </p>
                 </div>
                 <div
                   className={`p-3.5 rounded-xl ${
                     isDark ? 'bg-[#14181C]' : 'bg-[#f5f8f9]'
                   }`}
                 >
-                  <p className="text-lg font-black">{Number(stats.totalQuizzes)}</p>
-                  <p className="text-xs font-bold text-[#54626f]">Quizzes</p>
+                  <p className="font-black" style={{ fontSize: '24px' }}>
+                    {Number(stats.totalQuizzes)}
+                  </p>
+                  <p className="font-bold text-[#54626f]" style={{ fontSize: '15px' }}>
+                    Quizzes
+                  </p>
                 </div>
               </div>
 
               <button
                 type="submit"
                 disabled={savingName}
-                className="w-full py-3 rounded-xl text-sm font-extrabold bg-[#54626f] text-white hover:bg-[#2b6777] transition disabled:opacity-50 cursor-pointer"
+                className="w-full py-3 rounded-xl font-extrabold bg-[#54626f] text-white hover:bg-[#2b6777] transition disabled:opacity-50 cursor-pointer"
+                style={{ fontSize: '18px' }}
               >
                 {savingName ? 'Saving...' : 'Save Profile'}
               </button>
@@ -501,15 +569,18 @@ export default function ProfilePage() {
             >
               <div className="space-y-4">
                 <div className="flex items-center gap-2.5 border-b border-[#54626f]/15 pb-4">
-                  <div className="w-10 h-10 rounded-xl bg-[#b87d4b]/15 text-[#8c5a2b] flex items-center justify-center">
+                  <div className="w-11 h-11 rounded-xl bg-[#b87d4b]/15 text-[#8c5a2b] flex items-center justify-center">
                     {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                   </div>
                   <div>
-                    <h2 className="text-xl font-black">Theme Preference</h2>
+                    <h2 className="font-black" style={{ fontSize: '24px' }}>
+                      Theme Preference
+                    </h2>
                     <p
-                      className={`text-sm font-semibold ${
+                      className={`font-semibold ${
                         isDark ? 'text-[#9AA6B2]' : 'text-[#54626f]'
                       }`}
+                      style={{ fontSize: '17px' }}
                     >
                       Choose between Light Mode and Dark Mode
                     </p>
@@ -526,11 +597,11 @@ export default function ProfilePage() {
                         : 'bg-[#14181C] border-[#303A46] text-[#9AA6B2] hover:border-[#54626f]'
                     }`}
                   >
-                    <div className="flex items-center gap-2 font-black text-base">
-                      <Sun className="w-4 h-4 text-[#b87d4b]" />
+                    <div className="flex items-center gap-2 font-black" style={{ fontSize: '18px' }}>
+                      <Sun className="w-5 h-5 text-[#b87d4b]" />
                       <span>Light Mode</span>
                     </div>
-                    <p className="text-xs font-medium mt-1 opacity-80">
+                    <p className="font-medium mt-1 opacity-80" style={{ fontSize: '15px' }}>
                       Clean soft mist and slate look
                     </p>
                   </button>
@@ -544,11 +615,11 @@ export default function ProfilePage() {
                         : 'bg-[#f8fafb] border-[#e2eaeb] text-[#1f2933] hover:border-[#54626f]'
                     }`}
                   >
-                    <div className="flex items-center gap-2 font-black text-base">
-                      <Moon className="w-4 h-4 text-[#8FA6B8]" />
+                    <div className="flex items-center gap-2 font-black" style={{ fontSize: '18px' }}>
+                      <Moon className="w-5 h-5 text-[#8FA6B8]" />
                       <span>Dark Mode</span>
                     </div>
-                    <p className="text-xs font-medium mt-1 opacity-80">
+                    <p className="font-medium mt-1 opacity-80" style={{ fontSize: '15px' }}>
                       Low-glare evening study mode
                     </p>
                   </button>
@@ -560,11 +631,13 @@ export default function ProfilePage() {
                 {accountSummaryItems.map((item) => (
                   <li
                     key={item.id}
-                    className={`px-4 py-3 flex items-center justify-between gap-2 text-sm ${item.rowClass}`}
+                    className={`px-4 py-3.5 flex items-center justify-between gap-2 ${item.rowClass}`}
+                    style={{ fontSize: '17px' }}
                   >
                     <div className="flex items-center gap-2.5">
                       <span
-                        className={`text-xs font-extrabold px-2.5 py-0.5 rounded-full ${item.badgeClass}`}
+                        className={`font-extrabold px-2.5 py-0.5 rounded-full ${item.badgeClass}`}
+                        style={{ fontSize: '14px' }}
                       >
                         {item.badge}
                       </span>
@@ -576,14 +649,15 @@ export default function ProfilePage() {
               </ul>
 
               <div
-                className={`p-3.5 rounded-2xl border text-sm font-semibold flex items-center justify-between ${
+                className={`p-3.5 rounded-2xl border font-semibold flex items-center justify-between ${
                   isDark
                     ? 'bg-[#14181C] border-[#303A46] text-[#9AA6B2]'
                     : 'bg-[#f5f8f9] border-[#e2eaeb] text-[#4a5560]'
                 }`}
+                style={{ fontSize: '17px' }}
               >
                 <span className="inline-flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#2b6777]" />
+                  <ShieldCheck className="w-5 h-5 text-[#2b6777]" />
                   <span>Active Theme</span>
                 </span>
                 <span className="font-black uppercase">{isDark ? 'Dark' : 'Light'}</span>
@@ -602,29 +676,38 @@ export default function ProfilePage() {
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#54626f]/15 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-[#2b6777]/12 text-[#2b6777] flex items-center justify-center">
+                <div className="w-11 h-11 rounded-xl bg-[#2b6777]/12 text-[#2b6777] flex items-center justify-center">
                   <Lock className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black">Settings &amp; Password</h2>
+                  <h2 className="font-black" style={{ fontSize: '24px' }}>
+                    Settings &amp; Password
+                  </h2>
                   <p
-                    className={`text-sm font-semibold ${
+                    className={`font-semibold ${
                       isDark ? 'text-[#9AA6B2]' : 'text-[#54626f]'
                     }`}
+                    style={{ fontSize: '17px' }}
                   >
                     Last password / security update: {lastSignInDate}
                   </p>
                 </div>
               </div>
 
-              <span className="text-xs font-extrabold px-3 py-1.5 rounded-full bg-[#2b6777]/12 text-[#2b6777] self-start sm:self-auto">
+              <span
+                className="font-extrabold px-3.5 py-1.5 rounded-full bg-[#2b6777]/12 text-[#2b6777] self-start sm:self-auto"
+                style={{ fontSize: '15px' }}
+              >
                 Last Activity: {lastSignInDate}
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f] mb-1.5">
+                <label
+                  className="block font-extrabold uppercase tracking-wider text-[#54626f] mb-1.5"
+                  style={{ fontSize: '15px' }}
+                >
                   Current Password
                 </label>
                 <div className="relative">
@@ -633,11 +716,12 @@ export default function ProfilePage() {
                     placeholder="Enter current password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className={`w-full pl-4 pr-11 py-3 rounded-xl border text-base font-medium focus:outline-none ${
+                    className={`w-full pl-4 pr-11 py-3 rounded-xl border font-medium focus:outline-none ${
                       isDark
                         ? 'bg-[#14181C] border-[#303A46] text-[#E8ECEF]'
                         : 'bg-[#f8fafb] border-[#54626f]/20 text-[#1f2933]'
                     }`}
+                    style={{ fontSize: '18px' }}
                   />
                   <button
                     type="button"
@@ -647,16 +731,19 @@ export default function ProfilePage() {
                     className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#54626f] hover:text-[#1f2933] cursor-pointer"
                   >
                     {showCurrentPw ? (
-                      <EyeOff className="w-4 h-4" />
+                      <EyeOff className="w-5 h-5" />
                     ) : (
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-5 h-5" />
                     )}
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f] mb-1.5">
+                <label
+                  className="block font-extrabold uppercase tracking-wider text-[#54626f] mb-1.5"
+                  style={{ fontSize: '15px' }}
+                >
                   New Password
                 </label>
                 <div className="relative">
@@ -665,11 +752,12 @@ export default function ProfilePage() {
                     placeholder="At least 6 characters"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className={`w-full pl-4 pr-11 py-3 rounded-xl border text-base font-medium focus:outline-none ${
+                    className={`w-full pl-4 pr-11 py-3 rounded-xl border font-medium focus:outline-none ${
                       isDark
                         ? 'bg-[#14181C] border-[#303A46] text-[#E8ECEF]'
                         : 'bg-[#f8fafb] border-[#54626f]/20 text-[#1f2933]'
                     }`}
+                    style={{ fontSize: '18px' }}
                   />
                   <button
                     type="button"
@@ -679,16 +767,19 @@ export default function ProfilePage() {
                     className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#54626f] hover:text-[#1f2933] cursor-pointer"
                   >
                     {showNewPw ? (
-                      <EyeOff className="w-4 h-4" />
+                      <EyeOff className="w-5 h-5" />
                     ) : (
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-5 h-5" />
                     )}
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f] mb-1.5">
+                <label
+                  className="block font-extrabold uppercase tracking-wider text-[#54626f] mb-1.5"
+                  style={{ fontSize: '15px' }}
+                >
                   Confirm New Password
                 </label>
                 <div className="relative">
@@ -697,11 +788,12 @@ export default function ProfilePage() {
                     placeholder="Repeat new password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={`w-full pl-4 pr-11 py-3 rounded-xl border text-base font-medium focus:outline-none ${
+                    className={`w-full pl-4 pr-11 py-3 rounded-xl border font-medium focus:outline-none ${
                       isDark
                         ? 'bg-[#14181C] border-[#303A46] text-[#E8ECEF]'
                         : 'bg-[#f8fafb] border-[#54626f]/20 text-[#1f2933]'
                     }`}
+                    style={{ fontSize: '18px' }}
                   />
                   <button
                     type="button"
@@ -711,9 +803,9 @@ export default function ProfilePage() {
                     className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#54626f] hover:text-[#1f2933] cursor-pointer"
                   >
                     {showConfirmPw ? (
-                      <EyeOff className="w-4 h-4" />
+                      <EyeOff className="w-5 h-5" />
                     ) : (
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-5 h-5" />
                     )}
                   </button>
                 </div>
@@ -724,9 +816,10 @@ export default function ProfilePage() {
               <button
                 type="submit"
                 disabled={updatingPassword || !newPassword || !confirmPassword}
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-extrabold bg-[#54626f] text-white hover:bg-[#2b6777] transition disabled:opacity-50 cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-extrabold bg-[#54626f] text-white hover:bg-[#2b6777] transition disabled:opacity-50 cursor-pointer"
+                style={{ fontSize: '18px' }}
               >
-                <KeyRound className="w-4 h-4" />
+                <KeyRound className="w-5 h-5" />
                 <span>{updatingPassword ? 'Updating...' : 'Change Password'}</span>
               </button>
             </div>

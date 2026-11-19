@@ -7,7 +7,8 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
 
-const GEMINI_MODEL = 'gemini-3.5-flash-lite';
+// Use gemini-3.5-flash-lite unless overridden in .env
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
 
 const toObjectIdIfValid = (value) => {
   if (!value) return null;
@@ -140,7 +141,7 @@ const persistSessionExchange = async ({
   await historyDoc.save();
 };
 
-// Helper function to extract text from uploaded file safely
+// Extract text from file; if empty (such as scanned/image PDF), use clean topic context from title
 const extractTextFromFile = async (document) => {
   let extractedText = '';
 
@@ -184,10 +185,16 @@ const extractTextFromFile = async (document) => {
   }
 
   if (!extractedText || extractedText.trim().length < 5) {
-    extractedText = `Document Title: ${document.title}. Note: Scanned or image-based PDF detected. Provide a structured academic study summary, core concepts, key definitions, and study takeaways based on the document title.`;
+    const cleanTopic = String(document.title || 'Study Material')
+      .replace(/\.(pdf|txt|docx?|pptx?)$/i, '')
+      .replace(/\(\d+\)/g, '')
+      .replace(/^\d+(\.\d+)*\s*/, '')
+      .trim();
+
+    return `Study Topic: ${cleanTopic || document.title}. Provide direct, accurate, and exam-useful technical notes for this topic.`;
   }
 
-  return extractedText;
+  return extractedText.trim();
 };
 
 // Upload Document for a specific user
@@ -252,12 +259,17 @@ export const getDocuments = async (req, res, next) => {
   }
 };
 
-// Analyze Document with Gemini AI and return clean structured summary
+// Analyze Document with Gemini AI using custom instruction from frontend when provided
 export const analyzeDocumentAI = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const document = await Document.findById(id);
+    const { instruction } = req.body || {};
 
+    if (!mongoose.Types.ObjectId.isValid(String(id).trim())) {
+      return res.status(400).json({ success: false, error: 'Invalid document ID' });
+    }
+
+    const document = await Document.findById(id);
     if (!document) {
       return res.status(404).json({ success: false, error: 'Document not found' });
     }
@@ -266,26 +278,34 @@ export const analyzeDocumentAI = async (req, res, next) => {
 
     const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ success: false, error: 'Gemini API Key not configured' });
+      return res.status(500).json({
+        success: false,
+        error: 'Gemini API Key not configured on server',
+      });
     }
 
-    const prompt = `
-You are an expert academic study assistant. Analyze the following study material and generate a clean, well-organized, easy-to-read study summary.
-
-Use these exact section headers separated by blank lines:
-Overview
-Key Concepts
-Important Definitions
-Exam Takeaways
+    const customInstruction =
+      typeof instruction === 'string' && instruction.trim()
+        ? instruction.trim()
+        : `Generate a concise, high-yield Quick Summary of this document focused strictly on useful, exam-relevant, and actionable information.
 
 Rules:
-- Keep paragraphs short (2 to 3 lines max).
-- Use "- " at the start of bullet points for lists.
+- Include only core definitions, key concepts, important formulas/rules, comparisons, and main takeaways.
+- Skip filler text, repetitive examples, greetings, or low-value background fluff.
+- Organize the summary cleanly using short sections and clear bullet points so it is easy to scan and revise quickly.
+- Keep all numbers and technical notes clear, accurate, and easy to read.`;
+
+    const prompt = `
+${customInstruction}
+
+Formatting Rules:
+- Use "- " at the start of bullet points.
 - Do not wrap the entire output in code blocks.
+- Never mention whether the PDF is scanned or image-based, and never write meta-comments about summarizing.
 
 Document Title: ${document.title}
 Content:
-${extractedText.substring(0, 20000)}
+${String(extractedText || '').substring(0, 25000)}
     `.trim();
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
@@ -300,11 +320,12 @@ ${extractedText.substring(0, 20000)}
 
     const apiData = await apiResponse.json();
 
-    if (apiData.error) {
-      console.error('Gemini API Error:', apiData.error);
+    if (!apiResponse.ok || apiData.error) {
+      const apiErrMsg = apiData?.error?.message || `Gemini HTTP ${apiResponse.status}`;
+      console.error('Gemini API Error:', apiErrMsg);
       return res.status(500).json({
         success: false,
-        error: apiData.error.message || 'Gemini API error',
+        error: apiErrMsg,
       });
     }
 
@@ -316,8 +337,11 @@ ${extractedText.substring(0, 20000)}
       data: { summary },
     });
   } catch (error) {
-    console.error('AI Analysis Controller Error:', error);
-    next(error);
+    console.error('AI Analysis Controller Error:', error?.message || error);
+    return res.status(500).json({
+      success: false,
+      error: error?.message || 'Internal Server Error during document analysis',
+    });
   }
 };
 
@@ -449,10 +473,14 @@ export const chatWithDocumentAI = async (req, res, next) => {
       return res.status(500).json({ success: false, error: 'Gemini API Key not configured' });
     }
 
+    const contextSection = extractedText
+      ? `Document Context:\n${extractedText.substring(0, 15000)}`
+      : `Document Title: ${document.title}\nNote: No extracted text available from file.`;
+
     const prompt =
       mode === 'explain'
-        ? `You are an expert tutor. Based on the document context below, explain the concept clearly with simple definitions, examples, and bullet points.\n\nDocument Context:\n${extractedText.substring(0, 15000)}\n\nConcept to Explain: ${question}`
-        : `You are a helpful AI study assistant. Answer the user's question clearly based on the provided document context.\n\nDocument Context:\n${extractedText.substring(0, 15000)}\n\nQuestion: ${question}`;
+        ? `You are an expert tutor. Based on the document context below, explain the concept clearly with simple definitions, examples, and bullet points.\n\n${contextSection}\n\nConcept to Explain: ${question}`
+        : `You are a helpful AI study assistant. Answer the user's question clearly based on the provided document context.\n\n${contextSection}\n\nQuestion: ${question}`;
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
 
