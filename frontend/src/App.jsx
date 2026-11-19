@@ -9,6 +9,9 @@ import DocumentListPage from './pages/Documents/DocumentListPage';
 import DocumentDetailPage from './pages/Documents/DocumentDetailPage';
 import FlashcardPage from './pages/Flashcards/FlashcardPage';
 import FlashcardsListPage from './pages/Flashcards/FlashcardsListPage';
+import QuizTakePage from './pages/Quizzes/QuizTakePage';
+import QuizResultPage from './pages/Quizzes/QuizResultPage';
+import ImprovementPage from './pages/Improvement/ImprovementPage';
 
 export default function App() {
   return (
@@ -18,37 +21,69 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route 
-            path="/dashboard" 
+          <Route
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/documents" 
+          <Route
+            path="/documents"
             element={
               <ProtectedRoute>
                 <DocumentListPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/documents/:id" 
+          <Route
+            path="/documents/:id"
             element={
               <ProtectedRoute>
                 <DocumentDetailPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/flashcards" 
+          <Route
+            path="/flashcards"
             element={
               <ProtectedRoute>
                 <FlashcardsListPage />
               </ProtectedRoute>
-            } 
+            }
+          />
+          <Route
+            path="/quizzes"
+            element={
+              <ProtectedRoute>
+                <QuizTakePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quizzes/:id"
+            element={
+              <ProtectedRoute>
+                <QuizTakePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quizzes/result"
+            element={
+              <ProtectedRoute>
+                <QuizResultPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/improvement"
+            element={
+              <ProtectedRoute>
+                <ImprovementPage />
+              </ProtectedRoute>
+            }
           />
         </Routes>
       </Router>

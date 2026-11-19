@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../../services/firebase';
 import FlashcardPage from './FlashcardPage';
 import {
@@ -9,13 +10,20 @@ import {
   Sparkles,
   Layers,
   SlidersHorizontal,
-  BookOpenCheck,
+  BookOpen,
   BookmarkCheck,
   Trash2,
   Play,
+  Menu,
+  X,
+  ArrowLeft,
+  TrendingUp,
+  Target,
+  LogOut,
 } from 'lucide-react';
 
-// Guess likely question focus from sample question text for saved decks
+const SIDEBAR_SUBTITLE = 'Personal Study Space';
+
 const detectQuestionFocus = (questionText) => {
   const q = String(questionText || '').toLowerCase();
   if (!q) return 'Mixed Important';
@@ -41,7 +49,6 @@ const detectQuestionFocus = (questionText) => {
   return 'Mixed Important';
 };
 
-// Map stored difficulty value to a clean display label and badge style
 const getDifficultyBadge = (rawDiff) => {
   const normalized = String(rawDiff || 'medium').toLowerCase();
   if (normalized === 'easy' || normalized === 'basic') {
@@ -68,12 +75,10 @@ export default function FlashcardsListPage() {
   const [savedDecks, setSavedDecks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Source mode: 'document' or 'topic'
   const [sourceMode, setSourceMode] = useState('document');
   const [selectedDocId, setSelectedDocId] = useState('');
   const [customTopic, setCustomTopic] = useState('');
 
-  // Flashcard customization options
   const [difficulty, setDifficulty] = useState('medium');
   const [questionType, setQuestionType] = useState('mixed');
   const [cardCount, setCardCount] = useState(5);
@@ -83,6 +88,8 @@ export default function FlashcardsListPage() {
   const [selectedFlashcards, setSelectedFlashcards] = useState(null);
   const [activeDeckTitle, setActiveDeckTitle] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -116,7 +123,6 @@ export default function FlashcardsListPage() {
     }
   };
 
-  // Load previously saved flashcard sets for this user
   const loadSavedDecks = async (uid) => {
     try {
       const res = await axios.get(`http://localhost:8000/api/flashcards/user/${uid}`);
@@ -127,7 +133,16 @@ export default function FlashcardsListPage() {
     }
   };
 
-  // Resolve a readable deck title from document list or custom topic field
+  const handleLogout = async () => {
+    setIsSidebarOpen(false);
+    await signOut(auth);
+    navigate('/login');
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
   const resolveDeckTitle = (deck, docsList) => {
     if (deck.title) return deck.title;
     if (typeof deck.documentId === 'string' && deck.documentId.startsWith('topic:')) {
@@ -251,373 +266,478 @@ export default function FlashcardsListPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#e2eaeb] text-[#54626f] p-4 sm:p-6 lg:p-8">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="bg-white/90 border border-[#54626f]/20 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="min-h-screen bg-[#e2eaeb] text-[#54626f] flex relative">
+      {isSidebarOpen && (
+        <div
+          onClick={closeSidebar}
+          className="fixed inset-0 bg-black/25 z-30 transition-opacity"
+          aria-hidden="true"
+        />
+      )}
+
+      {isSidebarOpen && (
+        <aside className="fixed md:static top-0 left-0 h-screen md:h-auto w-64 bg-white border-r border-[#D5DDE0] p-6 flex flex-col justify-between shadow-lg z-40 shrink-0">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-[#1F2118] tracking-tight">
-              Custom AI Flashcards Studio
-            </h1>
-            <p className="text-sm text-[#54626f] mt-1">
-              Create high-yield flashcards from your documents or any custom topic with your preferred level, question type, and count (1 to 20).
-            </p>
-          </div>
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#e2eaeb] text-[#1f3b4d] text-xs font-extrabold self-start sm:self-auto">
-            <BookOpenCheck className="w-4 h-4 text-[#6b4c35]" />
-            <span>{totalSavedCards} Saved Cards</span>
-          </div>
-        </div>
+            <div className="flex items-center justify-between mb-10 px-1">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#54626f] text-white flex items-center justify-center shadow-md">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div>
+                  <h1 className="font-black text-lg tracking-tight text-[#1F2118]">
+                    AI Assistant
+                  </h1>
+                  <p className="text-[10px] font-black tracking-wider uppercase text-[#54626f]">
+                    {SIDEBAR_SUBTITLE}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={closeSidebar}
+                aria-label="Close sidebar"
+                className="p-2 rounded-xl text-[#54626f] hover:bg-[#e2eaeb] transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-        {errorMsg && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-semibold">
-            {errorMsg}
+            <nav className="space-y-2">
+              <Link
+                to="/dashboard"
+                onClick={closeSidebar}
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-extrabold text-[#1F2937] hover:bg-[#E2EAEB] transition"
+              >
+                <TrendingUp className="w-4 h-4" />
+                <span>Overview</span>
+              </Link>
+              <Link
+                to="/documents"
+                onClick={closeSidebar}
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-extrabold text-[#1F2937] hover:bg-[#E2EAEB] transition"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Documents</span>
+              </Link>
+              <Link
+                to="/flashcards"
+                onClick={closeSidebar}
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-extrabold bg-[#54626f] text-white transition"
+              >
+                <BrainCircuit className="w-4 h-4" />
+                <span>Flashcards</span>
+              </Link>
+              <Link
+                to="/quizzes"
+                onClick={closeSidebar}
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-extrabold text-[#1F2937] hover:bg-[#E2EAEB] transition"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Quizzes</span>
+              </Link>
+              <Link
+                to="/improvement"
+                onClick={closeSidebar}
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-extrabold text-[#1F2937] hover:bg-[#E2EAEB] transition"
+              >
+                <Target className="w-4 h-4" />
+                <span>Improvement</span>
+              </Link>
+            </nav>
           </div>
-        )}
 
-        {/* Custom Builder Card */}
-        <form
-          onSubmit={handleBuilderSubmit}
-          className="bg-white/95 border border-[#54626f]/20 rounded-2xl p-6 shadow-sm space-y-5"
-        >
-          <div className="flex items-center gap-2 border-b border-[#54626f]/10 pb-3">
-            <SlidersHorizontal className="w-5 h-5 text-[#54626f]" />
-            <h2 className="text-lg font-black text-[#1F2118]">Configure Your Flashcard Set</h2>
+          <div className="pt-6 border-t border-[#D5DDE0]">
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#FEF2F2] text-[#DC2626] hover:bg-[#FEE2E2] rounded-2xl text-sm font-bold transition cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out</span>
+            </button>
           </div>
+        </aside>
+      )}
 
-          {/* Source Selector: Existing Document vs New Topic */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f]">
-                Source Type
-              </label>
-              <div className="flex bg-[#e2eaeb]/70 p-1 rounded-xl text-xs font-bold">
-                <button
-                  type="button"
-                  onClick={() => setSourceMode('document')}
-                  className={`flex-1 py-2.5 rounded-lg transition cursor-pointer ${
-                    sourceMode === 'document'
-                      ? 'bg-[#54626f] text-white shadow-2xs'
-                      : 'text-[#54626f] hover:text-[#1F2118]'
-                  }`}
-                >
-                  From My Document
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSourceMode('topic')}
-                  className={`flex-1 py-2.5 rounded-lg transition cursor-pointer ${
-                    sourceMode === 'topic'
-                      ? 'bg-[#54626f] text-white shadow-2xs'
-                      : 'text-[#54626f] hover:text-[#1F2118]'
-                  }`}
-                >
-                  New Custom Topic
-                </button>
+      <div className="flex-1 p-4 sm:p-6 lg:p-8">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Header: 3-line on left, Back on right */}
+          <div className="bg-white/90 border border-[#54626f]/20 rounded-2xl p-6 shadow-sm flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen((prev) => !prev)}
+                aria-label="Toggle navigation menu"
+                className="w-11 h-11 rounded-xl bg-[#e2eaeb] text-[#1F2937] hover:bg-[#54626f] hover:text-white flex items-center justify-center transition shrink-0 mt-0.5 cursor-pointer"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-black text-[#1F2118] tracking-tight">
+                  Custom AI Flashcards Studio
+                </h1>
+                <p className="text-sm text-[#54626f] mt-1">
+                  Create high-yield flashcards from your documents or any custom topic with your preferred level, question type, and count (1 to 20).
+                </p>
               </div>
             </div>
 
-            {sourceMode === 'document' ? (
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-[#e2eaeb] text-[#1F2937] hover:bg-[#54626f] hover:text-white transition shrink-0 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back</span>
+            </button>
+          </div>
+
+          {errorMsg && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-semibold">
+              {errorMsg}
+            </div>
+          )}
+
+          {/* Custom Builder Card */}
+          <form
+            onSubmit={handleBuilderSubmit}
+            className="bg-white/95 border border-[#54626f]/20 rounded-2xl p-6 shadow-sm space-y-5"
+          >
+            <div className="flex items-center gap-2 border-b border-[#54626f]/10 pb-3">
+              <SlidersHorizontal className="w-5 h-5 text-[#54626f]" />
+              <h2 className="text-lg font-black text-[#1F2118]">Configure Your Flashcard Set</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f]">
-                  Select Document
+                  Source Type
+                </label>
+                <div className="flex bg-[#e2eaeb]/70 p-1 rounded-xl text-xs font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setSourceMode('document')}
+                    className={`flex-1 py-2.5 rounded-lg transition cursor-pointer ${
+                      sourceMode === 'document'
+                        ? 'bg-[#54626f] text-white shadow-2xs'
+                        : 'text-[#54626f] hover:text-[#1F2118]'
+                    }`}
+                  >
+                    From My Document
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSourceMode('topic')}
+                    className={`flex-1 py-2.5 rounded-lg transition cursor-pointer ${
+                      sourceMode === 'topic'
+                        ? 'bg-[#54626f] text-white shadow-2xs'
+                        : 'text-[#54626f] hover:text-[#1F2118]'
+                    }`}
+                  >
+                    New Custom Topic
+                  </button>
+                </div>
+              </div>
+
+              {sourceMode === 'document' ? (
+                <div className="space-y-2">
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f]">
+                    Select Document
+                  </label>
+                  <select
+                    value={selectedDocId}
+                    onChange={(e) => setSelectedDocId(e.target.value)}
+                    disabled={documents.length === 0}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#54626f]/25 bg-[#f8fafb] text-[#1F2118] text-sm font-semibold focus:outline-none focus:border-[#54626f]"
+                  >
+                    {documents.length === 0 ? (
+                      <option value="">No documents available</option>
+                    ) : (
+                      documents.map((doc) => (
+                        <option key={doc._id} value={doc._id}>
+                          {doc.title}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f]">
+                    Enter New Topic Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Operating System Deadlocks, A* Search, Normalization..."
+                    value={customTopic}
+                    onChange={(e) => setCustomTopic(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#54626f]/25 bg-[#f8fafb] text-[#1F2118] text-sm font-medium focus:outline-none focus:border-[#54626f]"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f]">
+                  Difficulty Level
+                </label>
+                <div className="grid grid-cols-3 gap-1.5 bg-[#e2eaeb]/60 p-1 rounded-xl">
+                  {[
+                    { id: 'easy', label: 'Basic' },
+                    { id: 'medium', label: 'Medium' },
+                    { id: 'hard', label: 'Hard' },
+                  ].map((lvl) => (
+                    <button
+                      key={lvl.id}
+                      type="button"
+                      onClick={() => setDifficulty(lvl.id)}
+                      className={`py-2 rounded-lg text-xs font-extrabold transition cursor-pointer ${
+                        difficulty === lvl.id
+                          ? 'bg-[#54626f] text-white shadow-2xs'
+                          : 'text-[#1f3b4d] hover:bg-white/60'
+                      }`}
+                    >
+                      {lvl.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f]">
+                  Question Type
                 </label>
                 <select
-                  value={selectedDocId}
-                  onChange={(e) => setSelectedDocId(e.target.value)}
-                  disabled={documents.length === 0}
+                  value={questionType}
+                  onChange={(e) => setQuestionType(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl border border-[#54626f]/25 bg-[#f8fafb] text-[#1F2118] text-sm font-semibold focus:outline-none focus:border-[#54626f]"
                 >
-                  {documents.length === 0 ? (
-                    <option value="">No documents available</option>
-                  ) : (
-                    documents.map((doc) => (
-                      <option key={doc._id} value={doc._id}>
-                        {doc.title}
-                      </option>
-                    ))
-                  )}
+                  <option value="mixed">Most Important (Mixed)</option>
+                  <option value="definition">Definitions &amp; Terms</option>
+                  <option value="concept">Core Concepts &amp; How It Works</option>
+                  <option value="comparison">Comparisons &amp; Differences</option>
+                  <option value="application">Exam &amp; Application Questions</option>
                 </select>
               </div>
-            ) : (
+
               <div className="space-y-2">
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f]">
-                  Enter New Topic Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., Operating System Deadlocks, A* Search, Normalization..."
-                  value={customTopic}
-                  onChange={(e) => setCustomTopic(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#54626f]/25 bg-[#f8fafb] text-[#1F2118] text-sm font-medium focus:outline-none focus:border-[#54626f]"
-                />
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f]">
+                    Number of Cards (1–20)
+                  </label>
+                  <span className="text-xs font-black text-[#6b4c35] bg-[#6b4c35]/10 px-2.5 py-0.5 rounded-md">
+                    {Number(cardCount)} Cards
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 pt-1">
+                  <input
+                    type="range"
+                    min="1"
+                    max="20"
+                    value={cardCount}
+                    onChange={(e) => setCardCount(Number(e.target.value))}
+                    className="flex-1 accent-[#54626f] cursor-pointer"
+                  />
+                  <input
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={cardCount}
+                    onChange={(e) => {
+                      const val = Math.min(20, Math.max(1, Number(e.target.value) || 1));
+                      setCardCount(val);
+                    }}
+                    className="w-16 px-2.5 py-1.5 rounded-xl border border-[#54626f]/25 bg-[#f8fafb] text-[#1F2118] text-sm font-bold text-center focus:outline-none focus:border-[#54626f]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="submit"
+                disabled={generating || (sourceMode === 'document' ? !selectedDocId : !customTopic.trim())}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-extrabold text-white bg-[#54626f] hover:bg-[#1F2118] transition shadow-sm disabled:opacity-50 cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>
+                  {generating
+                    ? 'Generating Important Cards...'
+                    : `Generate ${Number(cardCount)} Flashcards`}
+                </span>
+              </button>
+            </div>
+          </form>
+
+          {/* Saved Flashcard Decks */}
+          <div className="bg-white/95 border border-[#54626f]/20 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <BookmarkCheck className="w-5 h-5 text-[#6b4c35]" />
+                <h2 className="text-lg font-black text-[#1F2118]">Saved Flashcard Decks</h2>
+              </div>
+              <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#6b4c35]/12 text-[#6b4c35]">
+                {Number(savedDecks.length)} Sets ({totalSavedCards} Cards)
+              </span>
+            </div>
+
+            {savedDecks.length === 0 ? (
+              <div className="text-center py-7 px-4 rounded-xl bg-[#e2eaeb]/40 border border-dashed border-[#54626f]/25">
+                <p className="text-sm font-bold text-[#1F2118]">
+                  No saved flashcard sets yet. Generate a set above and it will appear here.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {savedDecks.map((deck) => {
+                  const cardsList = deck.cards || deck.flashcards || [];
+                  const deckTitle = resolveDeckTitle(deck, documents);
+                  const firstCard = cardsList[0] || {};
+                  const diffBadge = getDifficultyBadge(firstCard.difficulty);
+                  const questionFocus = detectQuestionFocus(firstCard.question);
+
+                  return (
+                    <div
+                      key={deck._id}
+                      className="rounded-2xl p-5 bg-[#f8fafb] border border-[#54626f]/15 flex flex-col justify-between hover:bg-white transition"
+                    >
+                      <div>
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-xs font-extrabold px-2.5 py-1 rounded-md bg-[#e2eaeb] text-[#1f3b4d]">
+                              {Number(cardsList.length)} Cards
+                            </span>
+                            <span
+                              className={`text-xs font-extrabold px-2.5 py-1 rounded-md ${diffBadge.classes}`}
+                            >
+                              {diffBadge.label}
+                            </span>
+                            <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-white border border-[#54626f]/15 text-[#54626f]">
+                              {questionFocus}
+                            </span>
+                          </div>
+                          <span className="text-xs text-[#54626f]">
+                            {deck.createdAt
+                              ? new Date(deck.createdAt).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                })
+                              : ''}
+                          </span>
+                        </div>
+
+                        <h3 className="font-bold text-[#1F2118] text-base mt-3 leading-snug">
+                          {deckTitle}
+                        </h3>
+
+                        {firstCard.question && (
+                          <p className="text-xs text-[#54626f] mt-1.5 line-clamp-2">
+                            Sample: {firstCard.question}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-[#54626f]/10 flex items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenSavedDeck(deck)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold text-white bg-[#54626f] hover:bg-[#1F2118] transition cursor-pointer"
+                        >
+                          <Play className="w-3.5 h-3.5" />
+                          <span>Open Deck</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteDeck(deck._id)}
+                          className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Delete</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
 
-          {/* Difficulty, Question Type, and Card Count (1 to 20) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Difficulty */}
-            <div className="space-y-2">
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f]">
-                Difficulty Level
-              </label>
-              <div className="grid grid-cols-3 gap-1.5 bg-[#e2eaeb]/60 p-1 rounded-xl">
-                {[
-                  { id: 'easy', label: 'Basic' },
-                  { id: 'medium', label: 'Medium' },
-                  { id: 'hard', label: 'Hard' },
-                ].map((lvl) => (
-                  <button
-                    key={lvl.id}
-                    type="button"
-                    onClick={() => setDifficulty(lvl.id)}
-                    className={`py-2 rounded-lg text-xs font-extrabold transition cursor-pointer ${
-                      difficulty === lvl.id
-                        ? 'bg-[#54626f] text-white shadow-2xs'
-                        : 'text-[#1f3b4d] hover:bg-white/60'
-                    }`}
-                  >
-                    {lvl.label}
-                  </button>
-                ))}
+          {/* Quick Document Decks Grid */}
+          <div className="bg-white/90 border border-[#54626f]/20 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#54626f]" />
+                <h2 className="text-lg font-black text-[#1F2118]">Your Documents Quick Deck</h2>
               </div>
-            </div>
-
-            {/* Question Type */}
-            <div className="space-y-2">
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f]">
-                Question Type
-              </label>
-              <select
-                value={questionType}
-                onChange={(e) => setQuestionType(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-[#54626f]/25 bg-[#f8fafb] text-[#1F2118] text-sm font-semibold focus:outline-none focus:border-[#54626f]"
-              >
-                <option value="mixed">Most Important (Mixed)</option>
-                <option value="definition">Definitions &amp; Terms</option>
-                <option value="concept">Core Concepts &amp; How It Works</option>
-                <option value="comparison">Comparisons &amp; Differences</option>
-                <option value="application">Exam &amp; Application Questions</option>
-              </select>
-            </div>
-
-            {/* Card Count (1 to 20) */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-[#54626f]">
-                  Number of Cards (1–20)
-                </label>
-                <span className="text-xs font-black text-[#6b4c35] bg-[#6b4c35]/10 px-2.5 py-0.5 rounded-md">
-                  {Number(cardCount)} Cards
-                </span>
-              </div>
-              <div className="flex items-center gap-3 pt-1">
-                <input
-                  type="range"
-                  min="1"
-                  max="20"
-                  value={cardCount}
-                  onChange={(e) => setCardCount(Number(e.target.value))}
-                  className="flex-1 accent-[#54626f] cursor-pointer"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={cardCount}
-                  onChange={(e) => {
-                    const val = Math.min(20, Math.max(1, Number(e.target.value) || 1));
-                    setCardCount(val);
-                  }}
-                  className="w-16 px-2.5 py-1.5 rounded-xl border border-[#54626f]/25 bg-[#f8fafb] text-[#1F2118] text-sm font-bold text-center focus:outline-none focus:border-[#54626f]"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-2 flex justify-end">
-            <button
-              type="submit"
-              disabled={generating || (sourceMode === 'document' ? !selectedDocId : !customTopic.trim())}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-extrabold text-white bg-[#54626f] hover:bg-[#1F2118] transition shadow-sm disabled:opacity-50 cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>
-                {generating
-                  ? 'Generating Important Cards...'
-                  : `Generate ${Number(cardCount)} Flashcards`}
+              <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#e2eaeb] text-[#1f3b4d]">
+                {Number(documents.length)} Documents
               </span>
-            </button>
-          </div>
-        </form>
-
-        {/* Saved Flashcard Decks */}
-        <div className="bg-white/95 border border-[#54626f]/20 rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <BookmarkCheck className="w-5 h-5 text-[#6b4c35]" />
-              <h2 className="text-lg font-black text-[#1F2118]">Saved Flashcard Decks</h2>
             </div>
-            <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#6b4c35]/12 text-[#6b4c35]">
-              {Number(savedDecks.length)} Sets ({totalSavedCards} Cards)
-            </span>
-          </div>
 
-          {savedDecks.length === 0 ? (
-            <div className="text-center py-7 px-4 rounded-xl bg-[#e2eaeb]/40 border border-dashed border-[#54626f]/25">
-              <p className="text-sm font-bold text-[#1F2118]">
-                No saved flashcard sets yet. Generate a set above and it will appear here.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {savedDecks.map((deck) => {
-                const cardsList = deck.cards || deck.flashcards || [];
-                const deckTitle = resolveDeckTitle(deck, documents);
-                const firstCard = cardsList[0] || {};
-                const diffBadge = getDifficultyBadge(firstCard.difficulty);
-                const questionFocus = detectQuestionFocus(firstCard.question);
-
-                return (
-                  <div
-                    key={deck._id}
-                    className="rounded-2xl p-5 bg-[#f8fafb] border border-[#54626f]/15 flex flex-col justify-between hover:bg-white transition"
-                  >
-                    <div>
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="text-xs font-extrabold px-2.5 py-1 rounded-md bg-[#e2eaeb] text-[#1f3b4d]">
-                            {Number(cardsList.length)} Cards
-                          </span>
-                          <span
-                            className={`text-xs font-extrabold px-2.5 py-1 rounded-md ${diffBadge.classes}`}
-                          >
-                            {diffBadge.label}
-                          </span>
-                          <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-white border border-[#54626f]/15 text-[#54626f]">
-                            {questionFocus}
-                          </span>
+            {loading ? (
+              <p className="text-sm text-[#54626f] font-medium py-4">Loading your documents...</p>
+            ) : documents.length === 0 ? (
+              <div className="text-center py-8 px-4 rounded-xl bg-[#e2eaeb]/40 border border-dashed border-[#54626f]/25">
+                <p className="text-sm font-bold text-[#1F2118]">
+                  No documents uploaded yet — you can still create flashcards using a Custom Topic above!
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {documents.map((doc) => {
+                  const isBusy = generatingDocId === doc._id;
+                  return (
+                    <div
+                      key={doc._id}
+                      className="rounded-2xl p-5 bg-[#f8fafb] border border-[#54626f]/15 flex flex-col justify-between hover:bg-white transition"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#e2eaeb] text-[#54626f] flex items-center justify-center shrink-0">
+                          <FileText className="w-5 h-5" />
                         </div>
-                        <span className="text-xs text-[#54626f]">
-                          {deck.createdAt
-                            ? new Date(deck.createdAt).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                              })
-                            : ''}
+                        <div>
+                          <h3 className="font-bold text-[#1F2118] text-base leading-snug">
+                            {doc.title}
+                          </h3>
+                          <p className="text-xs text-[#54626f] mt-1">
+                            Added on:{' '}
+                            {new Date(doc.uploadDate || doc.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-[#54626f]/10 flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-bold text-[#6b4c35] bg-[#6b4c35]/10 px-2.5 py-1 rounded-md">
+                          {String(difficulty).toUpperCase()} • {Number(cardCount)} Cards
                         </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            requestFlashcards({
+                              docId: doc._id,
+                              label: doc.title,
+                            })
+                          }
+                          disabled={isBusy || generating}
+                          className="px-4 py-2 rounded-xl text-xs font-extrabold text-white bg-[#54626f] hover:bg-[#1F2118] transition disabled:opacity-50 cursor-pointer"
+                        >
+                          {isBusy ? 'Generating...' : 'Practice Flashcards'}
+                        </button>
                       </div>
-
-                      <h3 className="font-bold text-[#1F2118] text-base mt-3 leading-snug">
-                        {deckTitle}
-                      </h3>
-
-                      {firstCard.question && (
-                        <p className="text-xs text-[#54626f] mt-1.5 line-clamp-2">
-                          Sample: {firstCard.question}
-                        </p>
-                      )}
                     </div>
-
-                    <div className="mt-4 pt-3 border-t border-[#54626f]/10 flex items-center justify-between gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenSavedDeck(deck)}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold text-white bg-[#54626f] hover:bg-[#1F2118] transition cursor-pointer"
-                      >
-                        <Play className="w-3.5 h-3.5" />
-                        <span>Open Deck</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteDeck(deck._id)}
-                        className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition cursor-pointer"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Delete</span>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Quick Document Decks Grid */}
-        <div className="bg-white/90 border border-[#54626f]/20 rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Layers className="w-5 h-5 text-[#54626f]" />
-              <h2 className="text-lg font-black text-[#1F2118]">Your Documents Quick Deck</h2>
-            </div>
-            <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#e2eaeb] text-[#1f3b4d]">
-              {Number(documents.length)} Documents
-            </span>
+                  );
+                })}
+              </div>
+            )}
           </div>
-
-          {loading ? (
-            <p className="text-sm text-[#54626f] font-medium py-4">Loading your documents...</p>
-          ) : documents.length === 0 ? (
-            <div className="text-center py-8 px-4 rounded-xl bg-[#e2eaeb]/40 border border-dashed border-[#54626f]/25">
-              <p className="text-sm font-bold text-[#1F2118]">
-                No documents uploaded yet — you can still create flashcards using a Custom Topic above!
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {documents.map((doc) => {
-                const isBusy = generatingDocId === doc._id;
-                return (
-                  <div
-                    key={doc._id}
-                    className="rounded-2xl p-5 bg-[#f8fafb] border border-[#54626f]/15 flex flex-col justify-between hover:bg-white transition"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#e2eaeb] text-[#54626f] flex items-center justify-center shrink-0">
-                        <FileText className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-[#1F2118] text-base leading-snug">
-                          {doc.title}
-                        </h3>
-                        <p className="text-xs text-[#54626f] mt-1">
-                          Added on:{' '}
-                          {new Date(doc.uploadDate || doc.createdAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-3 border-t border-[#54626f]/10 flex items-center justify-between gap-2">
-                      <span className="text-[11px] font-bold text-[#6b4c35] bg-[#6b4c35]/10 px-2.5 py-1 rounded-md">
-                        {String(difficulty).toUpperCase()} • {Number(cardCount)} Cards
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          requestFlashcards({
-                            docId: doc._id,
-                            label: doc.title,
-                          })
-                        }
-                        disabled={isBusy || generating}
-                        className="px-4 py-2 rounded-xl text-xs font-extrabold text-white bg-[#54626f] hover:bg-[#1F2118] transition disabled:opacity-50 cursor-pointer"
-                      >
-                        {isBusy ? 'Generating...' : 'Practice Flashcards'}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
       </div>
     </div>

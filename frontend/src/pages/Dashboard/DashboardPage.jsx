@@ -7,21 +7,27 @@ import {
   BookOpen,
   BrainCircuit,
   FileText,
-  Award,
   TrendingUp,
+  Target,
   LogOut,
   CheckCircle2,
   Clock,
   ArrowUpRight,
+  Menu,
+  X,
 } from 'lucide-react';
 
 import './DashboardPage.css';
+
+// Replace with your preferred subtitle label
+const SIDEBAR_SUBTITLE = 'Personal Study Space';
 
 export default function DashboardPage() {
   const [overview, setOverview] = useState(null);
   const [userName, setUserName] = useState('Learner');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,8 +59,17 @@ export default function DashboardPage() {
   }, [navigate]);
 
   const handleLogout = async () => {
+    setIsSidebarOpen(false);
     await signOut(auth);
     navigate('/login');
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
   };
 
   const stats = overview?.stats || {
@@ -98,63 +113,130 @@ export default function DashboardPage() {
   const completion = Math.min((Number(stats.totalDocuments) || 0) * 20, 100);
   const accuracy = Math.min(Math.max(Number(stats.averageScore) || 0, 0), 100);
 
+  const improvementMessage =
+    Number(stats.totalSubmissions) === 0
+      ? 'Take a quiz to unlock personalized improvement insights based on your score.'
+      : accuracy < 70
+      ? `Current average score is ${accuracy}%. Focus on weak concepts with flashcards and retake quizzes.`
+      : `Current average score is ${accuracy}%. Keep practicing harder questions to push your accuracy higher.`;
+
   return (
-    <div className="dashboard-page min-h-screen bg-[#e2eaeb] flex font-sans">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-[#D5DDE0] p-6 hidden md:flex flex-col justify-between shadow-sm">
-        <div>
-          <div className="flex items-center space-x-3 mb-10 px-2">
-            <div className="w-10 h-10 rounded-2xl bg-[#54626f] text-white flex items-center justify-center shadow-md">
-              <BookOpen className="w-5 h-5" />
+    <div className="dashboard-page min-h-screen bg-[#e2eaeb] flex font-sans relative">
+      {/* Backdrop when sidebar is open */}
+      {isSidebarOpen && (
+        <div
+          onClick={closeSidebar}
+          className="fixed inset-0 bg-black/25 z-30 transition-opacity"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Collapsible Sidebar */}
+      {isSidebarOpen && (
+        <aside className="fixed md:static top-0 left-0 h-screen md:h-auto w-64 bg-white border-r border-[#D5DDE0] p-6 flex flex-col justify-between shadow-lg z-40 shrink-0">
+          <div>
+            <div className="flex items-center justify-between mb-10 px-1">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#54626f] text-white flex items-center justify-center shadow-md">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+
+                <div>
+                  <h1 className="font-black text-lg tracking-tight">AI Assistant</h1>
+                  <p className="text-[10px] font-black tracking-wider uppercase text-[#54626f]">
+                    {SIDEBAR_SUBTITLE}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeSidebar}
+                aria-label="Close sidebar"
+                className="p-2 rounded-xl text-[#54626f] hover:bg-[#e2eaeb] transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            <div>
-              <h1 className="font-black text-lg tracking-tight">AI Assistant</h1>
-              <p className="text-[10px] font-black tracking-wider uppercase">Smart Study Hub</p>
-            </div>
+            <nav className="space-y-2">
+              <Link
+                to="/dashboard"
+                onClick={closeSidebar}
+                className="sidebar-link active"
+              >
+                <TrendingUp className="w-4 h-4" />
+                <span>Overview</span>
+              </Link>
+
+              <Link
+                to="/documents"
+                onClick={closeSidebar}
+                className="sidebar-link"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Documents</span>
+              </Link>
+
+              <Link
+                to="/flashcards"
+                onClick={closeSidebar}
+                className="sidebar-link"
+              >
+                <BrainCircuit className="w-4 h-4" />
+                <span>Flashcards</span>
+              </Link>
+
+              <Link
+                to="/quizzes"
+                onClick={closeSidebar}
+                className="sidebar-link"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Quizzes</span>
+              </Link>
+
+              <Link
+                to="/improvement"
+                onClick={closeSidebar}
+                className="sidebar-link"
+              >
+                <Target className="w-4 h-4" />
+                <span>Improvement</span>
+              </Link>
+            </nav>
           </div>
 
-          <nav className="space-y-2">
-            <Link to="/dashboard" className="sidebar-link active">
-              <TrendingUp className="w-4 h-4" />
-              <span>Overview</span>
-            </Link>
-
-            <Link to="/documents" className="sidebar-link">
-              <FileText className="w-4 h-4" />
-              <span>Documents</span>
-            </Link>
-
-            <Link to="/flashcards" className="sidebar-link">
-              <BrainCircuit className="w-4 h-4" />
-              <span>Flashcards</span>
-            </Link>
-
-            <Link to="/quizzes" className="sidebar-link">
-              <BookOpen className="w-4 h-4" />
-              <span>Quizzes</span>
-            </Link>
-          </nav>
-        </div>
-
-        <div className="pt-6 border-t border-[#D5DDE0]">
-          <button onClick={handleLogout} className="logout-button">
-            <LogOut className="w-4 h-4" />
-            <span>Sign Out</span>
-          </button>
-        </div>
-      </aside>
+          <div className="pt-6 border-t border-[#D5DDE0]">
+            <button onClick={handleLogout} className="logout-button">
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </aside>
+      )}
 
       {/* Main Content */}
       <main className="flex-1 p-6 md:p-10 overflow-y-auto">
         <header className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-          <div>
-            <h2 className="dashboard-heading text-2xl md:text-3xl font-black tracking-tight">
-              Dashboard Overview
-            </h2>
-            <p className="dashboard-description text-sm font-semibold mt-1">
-              Here is your personalized learning progress summary.
-            </p>
+          <div className="flex items-start gap-3.5">
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              aria-label="Toggle navigation menu"
+              className="menu-toggle-btn mt-0.5 shrink-0"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            <div>
+              <h2 className="dashboard-heading text-2xl md:text-3xl font-black tracking-tight">
+                Dashboard Overview
+              </h2>
+              <p className="dashboard-description text-sm font-semibold mt-1">
+                Here is your personalized learning progress summary.
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center space-x-3 self-start md:self-auto bg-white px-4 py-2.5 rounded-3xl border border-[#D5DDE0] shadow-md">
@@ -205,7 +287,7 @@ export default function DashboardPage() {
             <div className="analytics-card">
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h3 className="section-heading">Performance Analytics & Progress</h3>
+                  <h3 className="section-heading">Performance Analytics &amp; Progress</h3>
                   <p className="section-description">
                     Visual breakdown of your quiz accuracy and mastery level
                   </p>
@@ -237,6 +319,29 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Improvement Section */}
+            <div className="improvement-card">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-[#54626f]/15 text-[#54626f] flex items-center justify-center">
+                    <Target className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="section-heading">Improvement</h3>
+                    <p className="section-description">
+                      Score-based areas to focus on next
+                    </p>
+                  </div>
+                </div>
+
+                <span className="progress-badge">Score: {stats.averageScore}%</span>
+              </div>
+
+              <p className="text-sm font-semibold text-[#1F2937] bg-[#F4F6F7] border border-[#E5E7EB] rounded-2xl p-4">
+                {improvementMessage}
+              </p>
             </div>
 
             {/* Recent Activity */}
