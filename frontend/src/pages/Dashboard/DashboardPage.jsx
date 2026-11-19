@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -13,7 +12,7 @@ import {
   LogOut,
   CheckCircle2,
   Clock,
-  ArrowUpRight
+  ArrowUpRight,
 } from 'lucide-react';
 
 import './DashboardPage.css';
@@ -26,21 +25,19 @@ export default function DashboardPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const name =
-          user.displayName || user.email?.split('@')[0] || 'Learner';
-
-        setUserName(name);
-      } else {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
         navigate('/login');
+        return;
       }
-    });
 
-    const fetchDashboardData = async () => {
+      const name = user.displayName || user.email?.split('@')[0] || 'Learner';
+      setUserName(name);
+      setLoading(true);
+      setError('');
+
       try {
-        const response = await getDashboardOverview();
-
+        const response = await getDashboardOverview(user.uid);
         if (response.success) {
           setOverview(response.data);
         }
@@ -50,9 +47,7 @@ export default function DashboardPage() {
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchDashboardData();
+    });
 
     return () => unsubscribe();
   }, [navigate]);
@@ -64,9 +59,10 @@ export default function DashboardPage() {
 
   const stats = overview?.stats || {
     totalQuizzes: 0,
-    totalFlashcards: 4,
+    totalFlashcards: 0,
+    totalDocuments: 0,
     totalSubmissions: 0,
-    averageScore: 0
+    averageScore: 0,
   };
 
   const recentQuizzes = overview?.recentActivity?.quizzes || [];
@@ -75,39 +71,37 @@ export default function DashboardPage() {
   const cards = [
     {
       title: 'Total Quizzes',
-      value: stats.totalQuizzes,
+      value: Number(stats.totalQuizzes) || 0,
       icon: BookOpen,
-      link: '/quizzes'
+      link: '/quizzes',
     },
     {
       title: 'Flashcards',
-      value: stats.totalFlashcards,
+      value: Number(stats.totalFlashcards) || 0,
       icon: BrainCircuit,
-      link: '/flashcards'
+      link: '/flashcards',
     },
     {
-      title: 'Submissions',
-      value: stats.totalSubmissions,
-      icon: Award,
-      link: '/documents'
+      title: 'Documents',
+      value: Number(stats.totalDocuments) || 0,
+      icon: FileText,
+      link: '/documents',
     },
     {
       title: 'Avg Score',
-      value: `${stats.averageScore}%`,
+      value: `${Number(stats.averageScore) || 0}%`,
       icon: TrendingUp,
-      link: '/quizzes'
-    }
+      link: '/quizzes',
+    },
   ];
 
-  const completion = Math.min(stats.totalQuizzes * 25, 100);
-  const accuracy = Math.min(Math.max(stats.averageScore, 0), 100);
+  const completion = Math.min((Number(stats.totalDocuments) || 0) * 20, 100);
+  const accuracy = Math.min(Math.max(Number(stats.averageScore) || 0, 0), 100);
 
   return (
     <div className="dashboard-page min-h-screen bg-[#e2eaeb] flex font-sans">
-
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-[#D5DDE0] p-6 hidden md:flex flex-col justify-between shadow-sm">
-
         <div>
           <div className="flex items-center space-x-3 mb-10 px-2">
             <div className="w-10 h-10 rounded-2xl bg-[#54626f] text-white flex items-center justify-center shadow-md">
@@ -115,12 +109,8 @@ export default function DashboardPage() {
             </div>
 
             <div>
-              <h1 className="font-black text-lg tracking-tight">
-                AI Assistant
-              </h1>
-              <p className="text-[10px] font-black tracking-wider uppercase">
-                Smart Study Hub
-              </p>
+              <h1 className="font-black text-lg tracking-tight">AI Assistant</h1>
+              <p className="text-[10px] font-black tracking-wider uppercase">Smart Study Hub</p>
             </div>
           </div>
 
@@ -157,25 +147,19 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <main className="flex-1 p-6 md:p-10 overflow-y-auto">
-
-        {/* Header */}
         <header className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-
           <div>
             <h2 className="dashboard-heading text-2xl md:text-3xl font-black tracking-tight">
               Dashboard Overview
             </h2>
-
             <p className="dashboard-description text-sm font-semibold mt-1">
               Here is your personalized learning progress summary.
             </p>
           </div>
 
           <div className="flex items-center space-x-3 self-start md:self-auto bg-white px-4 py-2.5 rounded-3xl border border-[#D5DDE0] shadow-md">
-
             <div className="welcome-bubble">
-              Welcome to your profile,{' '}
-              <span>{userName}</span>! 🐾
+              Welcome to your profile, <span>{userName}</span>!
             </div>
 
             <div className="w-11 h-11 rounded-2xl bg-[#e2eaeb] flex items-center justify-center text-2xl shadow-inner">
@@ -194,32 +178,20 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
-
             {/* Statistics Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-
               {cards.map((card) => {
                 const Icon = card.icon;
-
                 return (
-                  <Link
-                    to={card.link}
-                    key={card.title}
-                    className="stat-card"
-                  >
+                  <Link to={card.link} key={card.title} className="stat-card">
                     <div className="flex items-center space-x-4">
                       <div className="stat-icon">
                         <Icon className="w-7 h-7" />
                       </div>
 
                       <div>
-                        <p className="stat-title">
-                          {card.title}
-                        </p>
-
-                        <h3 className="stat-number">
-                          {card.value}
-                        </h3>
+                        <p className="stat-title">{card.title}</p>
+                        <h3 className="stat-number">{card.value}</h3>
                       </div>
                     </div>
 
@@ -227,30 +199,22 @@ export default function DashboardPage() {
                   </Link>
                 );
               })}
-
             </div>
 
             {/* Performance Analytics */}
             <div className="analytics-card">
-
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h3 className="section-heading">
-                    Performance Analytics & Progress
-                  </h3>
-
+                  <h3 className="section-heading">Performance Analytics & Progress</h3>
                   <p className="section-description">
                     Visual breakdown of your quiz accuracy and mastery level
                   </p>
                 </div>
 
-                <span className="progress-badge">
-                  Active Progress
-                </span>
+                <span className="progress-badge">Active Progress</span>
               </div>
 
               <div className="space-y-5">
-
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-2">
                     <span>Overall Quiz Score Accuracy</span>
@@ -258,10 +222,7 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="progress-track">
-                    <div
-                      className="progress-fill"
-                      style={{ width: `${accuracy}%` }}
-                    />
+                    <div className="progress-fill" style={{ width: `${accuracy}%` }} />
                   </div>
                 </div>
 
@@ -272,20 +233,14 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="progress-track">
-                    <div
-                      className="progress-fill"
-                      style={{ width: `${completion}%` }}
-                    />
+                    <div className="progress-fill" style={{ width: `${completion}%` }} />
                   </div>
                 </div>
-
               </div>
             </div>
 
             {/* Recent Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-              {/* Recent Quizzes */}
               <div className="activity-card">
                 <h3 className="activity-heading">
                   <Clock className="w-4 h-4 text-[#54626f]" />
@@ -293,19 +248,14 @@ export default function DashboardPage() {
                 </h3>
 
                 {recentQuizzes.length === 0 ? (
-                  <p className="empty-message">
-                    No recent quizzes found yet.
-                  </p>
+                  <p className="empty-message">No recent quizzes found yet.</p>
                 ) : (
                   <div className="space-y-3">
                     {recentQuizzes.map((quiz) => (
                       <div key={quiz._id} className="activity-item">
-                        <span className="activity-name">
-                          {quiz.title}
-                        </span>
-
+                        <span className="activity-name">{quiz.title}</span>
                         <span className="activity-date">
-                          {new Date(quiz.createdAt).toLocaleDateString()}
+                          {new Date(quiz.createdAt).toLocaleDateString('en-US')}
                         </span>
                       </div>
                     ))}
@@ -313,7 +263,6 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {/* Recent Submissions */}
               <div className="activity-card">
                 <h3 className="activity-heading">
                   <CheckCircle2 className="w-4 h-4 text-[#54626f]" />
@@ -321,9 +270,7 @@ export default function DashboardPage() {
                 </h3>
 
                 {recentSubmissions.length === 0 ? (
-                  <p className="empty-message">
-                    No quiz submissions yet.
-                  </p>
+                  <p className="empty-message">No quiz submissions yet.</p>
                 ) : (
                   <div className="space-y-3">
                     {recentSubmissions.map((sub) => (
@@ -331,7 +278,6 @@ export default function DashboardPage() {
                         <span className="activity-name">
                           {sub.quizId?.title || 'Quiz Assessment'}
                         </span>
-
                         <span className="score-badge">
                           Score: {sub.score}/{sub.totalQuestions}
                         </span>
@@ -340,11 +286,9 @@ export default function DashboardPage() {
                   </div>
                 )}
               </div>
-
             </div>
           </>
         )}
-
       </main>
     </div>
   );

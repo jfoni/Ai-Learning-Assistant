@@ -1,16 +1,16 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const flashcardSchema = new mongoose.Schema(
   {
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      type: String,
       required: true,
+      index: true,
     },
     documentId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Document",
+      type: String,
       required: true,
+      index: true,
     },
     cards: [
       {
@@ -18,8 +18,8 @@ const flashcardSchema = new mongoose.Schema(
         answer: { type: String, required: true },
         difficulty: {
           type: String,
-          enum: ["easy", "medium", "hard"],
-          default: "medium",
+          enum: ['easy', 'medium', 'hard'],
+          default: 'medium',
         },
         lastReviewed: {
           type: Date,
@@ -41,9 +41,8 @@ const flashcardSchema = new mongoose.Schema(
   }
 );
 
-// Index for faster queries
 flashcardSchema.index({ userId: 1, documentId: 1 });
 
-const Flashcard = mongoose.model("Flashcard", flashcardSchema);
+const Flashcard = mongoose.model('Flashcard', flashcardSchema);
 
 export default Flashcard;

@@ -4,9 +4,9 @@ import mongoose from 'mongoose';
 const quizSchema = new mongoose.Schema(
   {
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      type: String,
       required: false,
+      index: true,
     },
     title: {
       type: String,
@@ -27,11 +27,11 @@ const quizSchema = new mongoose.Schema(
 const quizSubmissionSchema = new mongoose.Schema(
   {
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      type: String,
+      index: true,
     },
     quizId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.Mixed,
       ref: 'Quiz',
       required: true,
     },

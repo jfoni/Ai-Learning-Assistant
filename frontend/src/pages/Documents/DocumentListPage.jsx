@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { fetchDocuments, uploadDocument, analyzeDocument, deleteDocument } from '../../services/documentService';
+import { Link } from 'react-router-dom';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../../services/firebase';
+import {
+  fetchDocuments,
+  uploadDocument,
+  analyzeDocument,
+  deleteDocument,
+} from '../../services/documentService';
+import { FileText, Sparkles, Trash2, UploadCloud, ArrowUpRight, X } from 'lucide-react';
 
 export default function DocumentListPage() {
+  const [userId, setUserId] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [title, setTitle] = useState('');
   const [file, setFile] = useState(null);
@@ -11,16 +21,26 @@ export default function DocumentListPage() {
   const [aiSummary, setAiSummary] = useState(null);
   const [analyzingId, setAnalyzingId] = useState(null);
 
-  const userId = "user_123";
-
   useEffect(() => {
-    loadDocs();
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user?.uid) {
+        setUserId(user.uid);
+        await loadDocs(user.uid);
+      } else {
+        setUserId(null);
+        setDocuments([]);
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const loadDocs = async () => {
+  const loadDocs = async (uid) => {
     try {
-      const data = await fetchDocuments(userId);
-      setDocuments(data);
+      setLoading(true);
+      const data = await fetchDocuments(uid);
+      setDocuments(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching docs:', err);
     } finally {
@@ -30,18 +50,17 @@ export default function DocumentListPage() {
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!file && !pastedContent) return;
+    if (!userId || (!file && !pastedContent.trim())) return;
 
     const formData = new FormData();
     formData.append('userId', userId);
-    formData.append('title', title || (file ? file.name : 'Pasted Notes'));
-    
+    formData.append('title', title.trim() || (file ? file.name : 'Pasted Notes'));
+
     if (file) {
       formData.append('file', file);
-    } else if (pastedContent) {
-      // Create a text blob file if user pasted content directly
+    } else if (pastedContent.trim()) {
       const blob = new Blob([pastedContent], { type: 'text/plain' });
-      formData.append('file', blob, (title || 'Notes') + '.txt');
+      formData.append('file', blob, `${title.trim() || 'Notes'}.txt`);
     }
 
     try {
@@ -50,7 +69,7 @@ export default function DocumentListPage() {
       setTitle('');
       setFile(null);
       setPastedContent('');
-      loadDocs();
+      await loadDocs(userId);
     } catch (err) {
       console.error('Upload failed:', err);
     } finally {
@@ -58,12 +77,12 @@ export default function DocumentListPage() {
     }
   };
 
-  const handleAnalyze = async (id) => {
+  const handleAnalyze = async (doc) => {
     try {
-      setAnalyzingId(id);
+      setAnalyzingId(doc._id);
       setAiSummary(null);
-      const summary = await analyzeDocument(id);
-      setAiSummary({ id, summary });
+      const summary = await analyzeDocument(doc._id);
+      setAiSummary({ id: doc._id, title: doc.title, summary });
     } catch (err) {
       console.error('AI Analysis failed:', err);
     } finally {
@@ -74,7 +93,7 @@ export default function DocumentListPage() {
   const handleDelete = async (id) => {
     try {
       await deleteDocument(id);
-      setDocuments(documents.filter(doc => doc._id !== id));
+      setDocuments((prev) => prev.filter((doc) => doc._id !== id));
       if (aiSummary?.id === id) setAiSummary(null);
     } catch (err) {
       console.error('Delete failed:', err);
@@ -82,108 +101,174 @@ export default function DocumentListPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#e2eaeb] p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-[#1F2118]">Documents & AI Assistant</h1>
-          <p className="text-[#54626f] text-sm mt-1">Upload study materials, paste lecture notes, and generate instant AI summaries.</p>
+    <div className="min-h-screen bg-[#e2eaeb] text-[#54626f] p-4 sm:p-6 lg:p-8">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Page Header */}
+        <div className="bg-white/85 backdrop-blur-md border border-[#54626f]/20 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black text-[#1F2118] tracking-tight">
+              Documents & AI Assistant
+            </h1>
+            <p className="text-sm text-[#54626f] mt-1">
+              Upload your personal study PDFs or notes to generate clean summaries and chat with AI.
+            </p>
+          </div>
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold bg-[#e2eaeb] text-[#54626f] hover:bg-[#54626f] hover:text-white transition self-start sm:self-auto"
+          >
+            Back to Dashboard
+          </Link>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 mb-8">
-          <h2 className="text-xl font-bold text-[#1F2118] mb-4">Add New Material</h2>
+        {/* Upload Form Card */}
+        <div className="bg-white/90 border border-[#54626f]/20 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <UploadCloud className="w-5 h-5 text-[#54626f]" />
+            <h2 className="text-lg font-bold text-[#1F2118]">Add New Study Material</h2>
+          </div>
+
           <form onSubmit={handleUpload} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-[#54626f] uppercase mb-1">Document Title</label>
+                <label className="block text-xs font-bold text-[#54626f] uppercase tracking-wider mb-1.5">
+                  Document Title
+                </label>
                 <input
                   type="text"
                   placeholder="Enter custom title (optional)"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-[#1F2118] focus:outline-none focus:border-[#54626f]"
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#54626f]/25 bg-[#f8fafb] text-[#1F2118] text-sm focus:outline-none focus:border-[#54626f]"
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-semibold text-[#54626f] uppercase mb-1">Select PDF / File</label>
+                <label className="block text-xs font-bold text-[#54626f] uppercase tracking-wider mb-1.5">
+                  Select PDF / Text File
+                </label>
                 <input
                   type="file"
-                  onChange={(e) => setFile(e.target.files[0])}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-[#54626f] text-sm file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#54626f] file:text-white hover:file:bg-[#1F2118]"
+                  accept=".pdf,.txt"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  className="w-full px-3 py-2 rounded-xl border border-[#54626f]/25 bg-[#f8fafb] text-[#54626f] text-sm file:mr-3 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#54626f] file:text-white hover:file:bg-[#1F2118] cursor-pointer"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#54626f] uppercase mb-1">Or Paste Text / Lecture Notes Directly</label>
+              <label className="block text-xs font-bold text-[#54626f] uppercase tracking-wider mb-1.5">
+                Or Paste Lecture Notes Directly
+              </label>
               <textarea
                 rows="3"
-                placeholder="Paste text, outline, or notes here if your PDF text cannot be read directly..."
+                placeholder="Paste topic notes or text here..."
                 value={pastedContent}
                 onChange={(e) => setPastedContent(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-[#1F2118] focus:outline-none focus:border-[#54626f] text-sm"
+                className="w-full px-4 py-2.5 rounded-xl border border-[#54626f]/25 bg-[#f8fafb] text-[#1F2118] text-sm focus:outline-none focus:border-[#54626f]"
               />
             </div>
 
             <button
               type="submit"
-              disabled={uploading || (!file && !pastedContent)}
-              className="px-6 py-2.5 rounded-xl font-semibold text-white bg-[#54626f] hover:bg-[#1F2118] transition-colors shadow-sm disabled:opacity-50"
+              disabled={uploading || (!file && !pastedContent.trim())}
+              className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-[#54626f] hover:bg-[#1F2118] transition shadow-sm disabled:opacity-50 cursor-pointer"
             >
-              {uploading ? 'Processing & Saving...' : 'Save & Add Material'}
+              {uploading ? 'Uploading & Saving...' : 'Save Material'}
             </button>
           </form>
         </div>
 
+        {/* Clean Summary Preview Banner */}
         {aiSummary && (
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-8 shadow-sm">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="font-bold text-amber-900">AI Study Summary</h3>
-              <button onClick={() => setAiSummary(null)} className="text-xs text-amber-700 hover:underline">Close</button>
+          <div className="bg-white/95 border border-[#54626f]/25 rounded-2xl p-6 shadow-md">
+            <div className="flex items-center justify-between border-b border-[#54626f]/15 pb-3 mb-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#54626f]" />
+                <h3 className="font-bold text-[#1F2118] text-base">
+                  AI Summary — {aiSummary.title}
+                </h3>
+              </div>
+              <button
+                onClick={() => setAiSummary(null)}
+                className="p-1.5 rounded-lg text-[#54626f] hover:bg-[#e2eaeb] transition cursor-pointer"
+                aria-label="Close summary"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            <p className="text-sm text-amber-800 whitespace-pre-line">{aiSummary.summary}</p>
+            <div className="text-sm text-[#2C3539] whitespace-pre-line leading-relaxed bg-[#e2eaeb]/45 p-4 rounded-xl border border-[#54626f]/10">
+              {aiSummary.summary}
+            </div>
           </div>
         )}
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-          <h2 className="text-xl font-bold text-[#1F2118] mb-4">Saved Documents & Notes</h2>
-          
+        {/* Saved Documents List */}
+        <div className="bg-white/90 border border-[#54626f]/20 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-[#1F2118]">Your Saved Documents</h2>
+            <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#e2eaeb] text-[#54626f]">
+              {Number(documents.length)} Files
+            </span>
+          </div>
+
           {loading ? (
-            <p className="text-[#54626f]">Loading documents...</p>
+            <p className="text-sm text-[#54626f] py-6">Loading your documents...</p>
           ) : documents.length === 0 ? (
-            <p className="text-[#54626f] text-sm">No documents found yet. Upload a file or paste notes above!</p>
+            <div className="text-center py-10 px-4 rounded-xl bg-[#e2eaeb]/40 border border-dashed border-[#54626f]/25">
+              <FileText className="w-8 h-8 text-[#54626f]/60 mx-auto mb-2" />
+              <p className="text-sm font-bold text-[#1F2118]">No documents found for your account</p>
+              <p className="text-xs text-[#54626f] mt-1">
+                Upload a PDF or paste notes above to start studying.
+              </p>
+            </div>
           ) : (
             <div className="space-y-3">
               {documents.map((doc) => (
-                <div key={doc._id} className="p-4 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-between hover:bg-gray-100/50 transition-colors">
-                  <div>
-                    <h3 className="font-bold text-[#1F2118]">{doc.title}</h3>
-                    <p className="text-xs text-[#54626f] mt-0.5">
-                      Added on: {new Date(doc.uploadDate || doc.createdAt).toLocaleDateString()}
-                    </p>
+                <div
+                  key={doc._id}
+                  className="p-4 rounded-xl border border-[#54626f]/15 bg-[#f8fafb] flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white transition"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-[#e2eaeb] text-[#54626f] flex items-center justify-center shrink-0">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-[#1F2118] text-sm truncate">{doc.title}</h3>
+                      <p className="text-xs text-[#54626f] mt-0.5">
+                        Added on:{' '}
+                        {new Date(doc.uploadDate || doc.createdAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleAnalyze(doc._id)}
-                      disabled={analyzingId === doc._id}
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors disabled:opacity-50"
+
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <Link
+                      to={`/documents/${doc._id}`}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-[#54626f] hover:bg-[#1F2118] transition"
                     >
-                      {analyzingId === doc._id ? 'Analyzing...' : 'AI Summary'}
+                      <span>Open & Chat</span>
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    </Link>
+
+                    <button
+                      onClick={() => handleAnalyze(doc)}
+                      disabled={analyzingId === doc._id}
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold text-[#54626f] bg-[#e2eaeb] hover:bg-[#d2dee0] transition disabled:opacity-50 cursor-pointer"
+                    >
+                      {analyzingId === doc._id ? 'Summarizing...' : 'Quick Summary'}
                     </button>
-                    {doc.filePath && (
-                      <a
-                        href={`http://localhost:8000/${doc.filePath}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#54626f] bg-white border border-gray-200 hover:bg-gray-50 shadow-sm"
-                      >
-                        View
-                      </a>
-                    )}
+
                     <button
                       onClick={() => handleDelete(doc._id)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 transition cursor-pointer"
                     >
-                      Delete
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete</span>
                     </button>
                   </div>
                 </div>

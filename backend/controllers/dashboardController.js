@@ -1,54 +1,89 @@
 import { Quiz, QuizSubmission } from '../models/Quiz.js';
 import Flashcard from '../models/Flashcard.js';
+import Document from '../models/Document.js';
 
-// Get Dashboard Overview Stats
+// Get Dashboard Overview Stats strictly for the logged-in user
 export const getDashboardOverview = async (req, res) => {
   try {
-    const { userId } = req.query;
-    const filter = userId ? { userId } : {};
+    const userId = req.query.userId || req.user?.uid || req.user?.id;
 
-    // Fetch counts in parallel
-    const [totalQuizzes, totalFlashcards, totalSubmissions] = await Promise.all([
-      Quiz.countDocuments(filter),
-      Flashcard.countDocuments(filter),
-      QuizSubmission.countDocuments(filter),
+    if (!userId) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          stats: {
+            totalQuizzes: 0,
+            totalFlashcards: 0,
+            totalDocuments: 0,
+            totalSubmissions: 0,
+            averageScore: 0,
+          },
+          recentActivity: {
+            quizzes: [],
+            submissions: [],
+            documents: [],
+          },
+        },
+      });
+    }
+
+    const uidStr = String(userId);
+    const filter = { userId: uidStr };
+
+    // Use collection methods for Quiz & QuizSubmission to avoid stale ObjectId casting
+    const [totalQuizzes, totalFlashcards, totalDocuments, totalSubmissions] = await Promise.all([
+      Quiz.collection.countDocuments(filter),
+      Flashcard.collection.countDocuments(filter),
+      Document.countDocuments(filter),
+      QuizSubmission.collection.countDocuments(filter),
     ]);
 
-    // Calculate average quiz score percentage
-    const submissions = await QuizSubmission.find(filter);
+    const submissions = await QuizSubmission.collection.find(filter).toArray();
     let averageScore = 0;
 
     if (submissions.length > 0) {
       const totalPercentage = submissions.reduce((acc, sub) => {
-        const percentage = sub.totalQuestions > 0 ? (sub.score / sub.totalQuestions) * 100 : 0;
+        const totalQ = Number(sub.totalQuestions) || 0;
+        const scoreVal = Number(sub.score) || 0;
+        const percentage = totalQ > 0 ? (scoreVal / totalQ) * 100 : 0;
         return acc + percentage;
       }, 0);
       averageScore = Math.round(totalPercentage / submissions.length);
     }
 
-    // Fetch recent activities
-    const recentQuizzes = await Quiz.find(filter)
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .select('title createdAt');
-
-    const recentSubmissions = await QuizSubmission.find(filter)
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .populate('quizId', 'title');
+    const [recentQuizzes, recentDocuments, recentSubmissions] = await Promise.all([
+      Quiz.collection
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .project({ title: 1, createdAt: 1 })
+        .toArray(),
+      Document.find(filter)
+        .sort({ uploadDate: -1, createdAt: -1 })
+        .limit(5)
+        .select('title createdAt uploadDate')
+        .lean(),
+      QuizSubmission.collection
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .toArray(),
+    ]);
 
     return res.status(200).json({
       success: true,
       data: {
         stats: {
-          totalQuizzes,
-          totalFlashcards,
-          totalSubmissions,
-          averageScore,
+          totalQuizzes: Number(totalQuizzes) || 0,
+          totalFlashcards: Number(totalFlashcards) || 0,
+          totalDocuments: Number(totalDocuments) || 0,
+          totalSubmissions: Number(totalSubmissions) || 0,
+          averageScore: Number(averageScore) || 0,
         },
         recentActivity: {
           quizzes: recentQuizzes,
           submissions: recentSubmissions,
+          documents: recentDocuments,
         },
       },
     });

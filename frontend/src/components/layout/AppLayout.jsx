@@ -1,9 +1,27 @@
-import React from 'react'
+import React, { useState } from 'react';
+import Sidebar from './Sidebar';
+import Header from './Header';
 
-const AppLayout = () => {
+const AppLayout = ({ children }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
-    <div>AppLayout</div>
-  )
-}
+    <div className="flex h-screen bg-[#e2eaeb] text-black">
+      <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header toggleSidebar={toggleSidebar} />
+
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-6 text-black">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+};
 
 export default AppLayout;
