@@ -9,6 +9,7 @@ import {
   FileText,
   TrendingUp,
   Target,
+  SearchCheck,
   User,
   LogOut,
   X,
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { label: 'Flashcards', to: '/flashcards', icon: BrainCircuit },
   { label: 'Quizzes', to: '/quizzes', icon: BookOpen },
   { label: 'Improvement', to: '/improvement', icon: Target },
+  { label: 'Knowledge Gaps', to: '/knowledge-gaps', icon: SearchCheck },
 ];
 
 const PROFILE_ITEM = {

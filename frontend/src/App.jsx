@@ -13,6 +13,7 @@ import FlashcardsListPage from './pages/Flashcards/FlashcardsListPage';
 import QuizTakePage from './pages/Quizzes/QuizTakePage';
 import QuizResultPage from './pages/Quizzes/QuizResultPage';
 import ImprovementPage from './pages/Improvement/ImprovementPage';
+import KnowledgeGapPage from './pages/KnowledgeGapPage';
 import ProfilePage from './pages/Profile/ProfilePage';
 
 export default function App() {
@@ -93,6 +94,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <ImprovementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/knowledge-gaps"
+              element={
+                <ProtectedRoute>
+                  <KnowledgeGapPage />
                 </ProtectedRoute>
               }
             />
