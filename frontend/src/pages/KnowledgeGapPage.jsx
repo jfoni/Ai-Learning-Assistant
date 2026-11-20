@@ -104,7 +104,7 @@ export default function KnowledgeGapPage() {
       className={`min-h-screen flex relative ${
         isDark ? 'bg-[#12141A] text-[#F3F4F6]' : 'bg-[#e2eaeb] text-[#1F2118]'
       }`}
-      style={{ fontSize: '20px' }}
+      style={{ fontSize: '22px' }}
     >
       <AppSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
@@ -135,7 +135,7 @@ export default function KnowledgeGapPage() {
               <div>
                 <h1
                   className="font-black tracking-tight"
-                  style={{ fontSize: '34px', lineHeight: 1.2 }}
+                  style={{ fontSize: '38px', lineHeight: 1.2 }}
                 >
                   AI Knowledge Gap Detector
                 </h1>
@@ -143,7 +143,7 @@ export default function KnowledgeGapPage() {
                   className={`mt-1 ${
                     isDark ? 'text-[#D1D5DB] font-semibold' : 'text-[#54626f] font-medium'
                   }`}
-                  style={{ fontSize: '18px' }}
+                  style={{ fontSize: '20px' }}
                 >
                   Pinpoints weak concepts, recurring mistakes, and next study steps from your actual quiz history
                 </p>
@@ -159,7 +159,7 @@ export default function KnowledgeGapPage() {
                   ? 'bg-[#222732] text-[#7EC4CF] hover:bg-[#2C3240]'
                   : 'bg-[#e2eaeb] text-[#1F2937] hover:bg-[#d2dee0]'
               }`}
-              style={{ fontSize: '17px' }}
+              style={{ fontSize: '19px' }}
             >
               <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
               <span>Refresh Analysis</span>
@@ -173,7 +173,7 @@ export default function KnowledgeGapPage() {
                   ? 'bg-[#171A21] border-[#2C313C] text-[#D1D5DB]'
                   : 'bg-white/95 border-[#54626f]/20 text-[#54626f]'
               }`}
-              style={{ fontSize: '20px' }}
+              style={{ fontSize: '22px' }}
             >
               Analyzing your learning history and quiz accuracy...
             </div>
@@ -184,7 +184,7 @@ export default function KnowledgeGapPage() {
                   ? 'bg-[#171A21] border-rose-500/30'
                   : 'bg-white border-rose-200'
               }`}
-              style={{ fontSize: '19px' }}
+              style={{ fontSize: '21px' }}
             >
               {errorMsg}
             </div>
@@ -197,18 +197,18 @@ export default function KnowledgeGapPage() {
               }`}
             >
               <TrendingUp
-                className={`w-11 h-11 mx-auto ${
+                className={`w-12 h-12 mx-auto ${
                   isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
                 }`}
               />
-              <h2 className="font-black" style={{ fontSize: '26px' }}>
+              <h2 className="font-black" style={{ fontSize: '28px' }}>
                 No Quiz History to Analyze Yet
               </h2>
               <p
                 className={`max-w-xl mx-auto ${
                   isDark ? 'text-[#D1D5DB]' : 'text-[#54626f]'
                 }`}
-                style={{ fontSize: '18px' }}
+                style={{ fontSize: '20px' }}
               >
                 Complete at least one quiz so the detector can evaluate your real answers, identify weak concepts, and recommend targeted revision.
               </p>
@@ -220,7 +220,7 @@ export default function KnowledgeGapPage() {
                     ? 'bg-[#7EC4CF] text-black hover:bg-[#93D1DA]'
                     : 'bg-[#54626f] text-white hover:bg-[#1F2118]'
                 }`}
-                style={{ fontSize: '18px' }}
+                style={{ fontSize: '20px' }}
               >
                 <Sparkles className="w-5 h-5" />
                 <span>Take a Quiz</span>
@@ -242,13 +242,13 @@ export default function KnowledgeGapPage() {
                       className={`font-extrabold uppercase tracking-wider ${
                         isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
                       }`}
-                      style={{ fontSize: '14px' }}
+                      style={{ fontSize: '15px' }}
                     >
                       Weak Topics
                     </span>
                     <AlertTriangle className="w-5 h-5 text-rose-500" />
                   </div>
-                  <p className="font-black text-rose-500 mt-1.5" style={{ fontSize: '34px' }}>
+                  <p className="font-black text-rose-500 mt-1.5" style={{ fontSize: '38px' }}>
                     {weakTopics.length}
                   </p>
                 </div>
@@ -265,13 +265,13 @@ export default function KnowledgeGapPage() {
                       className={`font-extrabold uppercase tracking-wider ${
                         isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
                       }`}
-                      style={{ fontSize: '14px' }}
+                      style={{ fontSize: '15px' }}
                     >
                       Needs Improvement
                     </span>
                     <BookOpen className="w-5 h-5 text-amber-500" />
                   </div>
-                  <p className="font-black text-amber-500 mt-1.5" style={{ fontSize: '34px' }}>
+                  <p className="font-black text-amber-500 mt-1.5" style={{ fontSize: '38px' }}>
                     {needsWorkTopics.length}
                   </p>
                 </div>
@@ -288,13 +288,13 @@ export default function KnowledgeGapPage() {
                       className={`font-extrabold uppercase tracking-wider ${
                         isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
                       }`}
-                      style={{ fontSize: '14px' }}
+                      style={{ fontSize: '15px' }}
                     >
                       Strong Topics
                     </span>
                     <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                   </div>
-                  <p className="font-black text-emerald-500 mt-1.5" style={{ fontSize: '34px' }}>
+                  <p className="font-black text-emerald-500 mt-1.5" style={{ fontSize: '38px' }}>
                     {strongTopics.length}
                   </p>
                 </div>
@@ -319,14 +319,14 @@ export default function KnowledgeGapPage() {
                     <Sparkles className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="font-black" style={{ fontSize: '22px' }}>
+                    <h2 className="font-black" style={{ fontSize: '26px' }}>
                       AI Diagnostic Summary
                     </h2>
                     <p
-                      className={`mt-1.5 leading-relaxed ${
+                      className={`mt-2 leading-relaxed ${
                         isDark ? 'text-[#E5E7EB]' : 'text-[#374151]'
                       }`}
-                      style={{ fontSize: '18px' }}
+                      style={{ fontSize: '21px' }}
                     >
                       {report.aiInsights.summary}
                     </p>
@@ -342,7 +342,7 @@ export default function KnowledgeGapPage() {
                     : 'bg-white/95 border-[#54626f]/20'
                 }`}
               >
-                <h2 className="font-black" style={{ fontSize: '26px' }}>
+                <h2 className="font-black" style={{ fontSize: '30px' }}>
                   Topic-wise Mastery &amp; Gaps
                 </h2>
 
@@ -385,26 +385,26 @@ export default function KnowledgeGapPage() {
                       >
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div className="flex items-center gap-3 flex-wrap">
-                            <h3 className="font-black" style={{ fontSize: '23px' }}>
+                            <h3 className="font-black" style={{ fontSize: '27px' }}>
                               {t.topic}
                             </h3>
                             <span
-                              className={`font-extrabold px-3.5 py-1 rounded-full border ${badgeStyle(
+                              className={`font-extrabold px-4 py-1 rounded-full border ${badgeStyle(
                                 t.category,
                                 isDark
                               )}`}
-                              style={{ fontSize: '14px' }}
+                              style={{ fontSize: '16px' }}
                             >
                               {t.category}
                             </span>
                             {t.progressDelta !== null && (
                               <span
-                                className={`font-bold px-3 py-1 rounded-full ${
+                                className={`font-bold px-3.5 py-1 rounded-full ${
                                   t.progressDelta >= 0
                                     ? 'bg-emerald-100 text-emerald-700'
                                     : 'bg-rose-100 text-rose-600'
                                 }`}
-                                style={{ fontSize: '14px' }}
+                                style={{ fontSize: '16px' }}
                               >
                                 {t.progressDelta >= 0
                                   ? `+${t.progressDelta}% recent`
@@ -413,13 +413,13 @@ export default function KnowledgeGapPage() {
                             )}
                           </div>
 
-                          <span className="font-black" style={{ fontSize: '18px' }}>
+                          <span className="font-black" style={{ fontSize: '21px' }}>
                             Avg: {t.avgPercentage}% ({t.correctQuestions}/{t.totalQuestions} correct)
                           </span>
                         </div>
 
                         <div
-                          className={`w-full h-3 rounded-full overflow-hidden ${
+                          className={`w-full h-3.5 rounded-full overflow-hidden ${
                             isDark ? 'bg-[#222732]' : 'bg-[#e2eaeb]'
                           }`}
                         >
@@ -434,18 +434,20 @@ export default function KnowledgeGapPage() {
 
                         {insightPoints.length > 0 && (
                           <ul
-                            className={`space-y-2.5 pt-3 border-t list-disc pl-6 m-0 ${
+                            className={`space-y-3 pt-3 border-t list-disc pl-7 m-0 ${
                               isDark
                                 ? 'border-[#262C38] text-[#E5E7EB] marker:text-[#7EC4CF]'
                                 : 'border-[#54626f]/15 text-[#374151] marker:text-[#2F5D68]'
                             }`}
-                            style={{ fontSize: '18px' }}
+                            style={{ fontSize: '21px' }}
                           >
                             {insightPoints.map((pt) => (
                               <li key={pt.label} className="leading-relaxed">
                                 <strong
                                   className={
-                                    isDark ? 'text-white font-extrabold' : 'text-[#1F2118] font-extrabold'
+                                    isDark
+                                      ? 'text-white font-extrabold'
+                                      : 'text-[#1F2118] font-extrabold'
                                   }
                                 >
                                   {pt.label}:
@@ -456,8 +458,8 @@ export default function KnowledgeGapPage() {
                           </ul>
                         )}
 
-                        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                          <div className="flex items-center gap-2" style={{ fontSize: '16px' }}>
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-3">
+                          <div className="flex items-center gap-2" style={{ fontSize: '18px' }}>
                             {t.recommendedDocument ? (
                               <span
                                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold ${
@@ -466,7 +468,7 @@ export default function KnowledgeGapPage() {
                                     : 'bg-[#e2eaeb] text-[#1f3b4d]'
                                 }`}
                               >
-                                <FileText className="w-4 h-4" />
+                                <FileText className="w-5 h-5" />
                                 <span>Suggested Doc: {t.recommendedDocument.title}</span>
                               </span>
                             ) : (
@@ -489,9 +491,9 @@ export default function KnowledgeGapPage() {
                                   ? 'bg-[#222732] text-[#E5E7EB] hover:bg-[#2C3240]'
                                   : 'bg-[#e2eaeb] text-[#1F2118] hover:bg-[#d2dee0]'
                               }`}
-                              style={{ fontSize: '16px' }}
+                              style={{ fontSize: '18px' }}
                             >
-                              <Layers className="w-4 h-4" />
+                              <Layers className="w-5 h-5" />
                               <span>Flashcards</span>
                             </button>
 
@@ -503,9 +505,9 @@ export default function KnowledgeGapPage() {
                                   ? 'bg-[#7EC4CF] text-black hover:bg-[#93D1DA]'
                                   : 'bg-[#54626f] text-white hover:bg-[#1F2118]'
                               }`}
-                              style={{ fontSize: '16px' }}
+                              style={{ fontSize: '18px' }}
                             >
-                              <Sparkles className="w-4 h-4" />
+                              <Sparkles className="w-5 h-5" />
                               <span>Practice Topic</span>
                             </button>
                           </div>

@@ -15,6 +15,8 @@ import flashcardRoutes from './routes/flashcardRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import universalAssistantRoutes from './routes/universalAssistantRoutes.js';
+import knowledgeGapRoutes from './routes/knowledgeGapRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,6 +52,8 @@ app.use('/api/flashcards', flashcardRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/assistant', universalAssistantRoutes);
+app.use('/api/knowledge-gaps', knowledgeGapRoutes);
 
 // Error Handler Middleware
 app.use(errorHandler);

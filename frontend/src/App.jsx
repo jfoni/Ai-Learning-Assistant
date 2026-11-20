@@ -14,6 +14,7 @@ import QuizTakePage from './pages/Quizzes/QuizTakePage';
 import QuizResultPage from './pages/Quizzes/QuizResultPage';
 import ImprovementPage from './pages/Improvement/ImprovementPage';
 import KnowledgeGapPage from './pages/KnowledgeGapPage';
+import UniversalAssistantPage from './pages/UniversalAssistantPage';
 import ProfilePage from './pages/Profile/ProfilePage';
 
 export default function App() {
@@ -102,6 +103,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <KnowledgeGapPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/assistant"
+              element={
+                <ProtectedRoute>
+                  <UniversalAssistantPage />
                 </ProtectedRoute>
               }
             />

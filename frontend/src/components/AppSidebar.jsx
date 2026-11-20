@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Target,
   SearchCheck,
+  Sparkles,
   User,
   LogOut,
   X,
@@ -19,11 +20,12 @@ const SIDEBAR_SUBTITLE = 'Personal Study Space';
 
 const NAV_ITEMS = [
   { label: 'Overview', to: '/dashboard', icon: TrendingUp },
+  { label: 'Universal Assistant', to: '/assistant', icon: Sparkles },
   { label: 'Documents', to: '/documents', icon: FileText },
   { label: 'Flashcards', to: '/flashcards', icon: BrainCircuit },
   { label: 'Quizzes', to: '/quizzes', icon: BookOpen },
-  { label: 'Improvement', to: '/improvement', icon: Target },
   { label: 'Knowledge Gaps', to: '/knowledge-gaps', icon: SearchCheck },
+  { label: 'Improvement', to: '/improvement', icon: Target },
 ];
 
 const PROFILE_ITEM = {

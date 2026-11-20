@@ -1,9 +1,8 @@
-const express = require('express');
+import express from 'express';
+import { analyzeKnowledgeGapsController } from '../controllers/knowledgeGapController.js';
+
 const router = express.Router();
-const {
-  analyzeKnowledgeGapsController,
-} = require('../controllers/knowledgeGapController');
 
 router.post('/analyze', analyzeKnowledgeGapsController);
 
-module.exports = router;
+export default router;

@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = process.env.GEMINI_API_KEY
   ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
@@ -123,7 +123,7 @@ const buildTopicSummaries = (submissions = [], documents = []) => {
   });
 };
 
-const analyzeKnowledgeGapsController = async (req, res) => {
+export const analyzeKnowledgeGapsController = async (req, res) => {
   try {
     const { userId, submissions = [], documents = [] } = req.body || {};
 
@@ -228,8 +228,4 @@ ${JSON.stringify(
       message: 'Failed to analyze knowledge gaps.',
     });
   }
-};
-
-module.exports = {
-  analyzeKnowledgeGapsController,
 };
