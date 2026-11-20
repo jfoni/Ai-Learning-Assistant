@@ -2,10 +2,10 @@ import { Quiz, QuizSubmission } from '../models/Quiz.js';
 import Flashcard from '../models/Flashcard.js';
 import Document from '../models/Document.js';
 
-// Get Dashboard Overview Stats strictly for the logged-in user
 export const getDashboardOverview = async (req, res) => {
   try {
-    const userId = req.query.userId || req.user?.uid || req.user?.id;
+    const userId =
+      req.query.userId || req.params.userId || req.user?.uid || req.user?.id;
 
     if (!userId) {
       return res.status(200).json({
@@ -17,6 +17,7 @@ export const getDashboardOverview = async (req, res) => {
             totalDocuments: 0,
             totalSubmissions: 0,
             averageScore: 0,
+            averageScorePercentage: '0%',
           },
           recentActivity: {
             quizzes: [],
@@ -30,25 +31,31 @@ export const getDashboardOverview = async (req, res) => {
     const uidStr = String(userId);
     const filter = { userId: uidStr };
 
-    // Use collection methods for Quiz & QuizSubmission to avoid stale ObjectId casting
-    const [totalQuizzes, totalFlashcards, totalDocuments, totalSubmissions] = await Promise.all([
-      Quiz.collection.countDocuments(filter),
-      Flashcard.collection.countDocuments(filter),
-      Document.countDocuments(filter),
-      QuizSubmission.collection.countDocuments(filter),
-    ]);
+    const [totalQuizzes, totalFlashcards, totalDocuments, totalSubmissions] =
+      await Promise.all([
+        Quiz.collection.countDocuments(filter),
+        Flashcard.collection.countDocuments(filter),
+        Document.countDocuments(filter),
+        QuizSubmission.collection.countDocuments(filter),
+      ]);
 
-    const submissions = await QuizSubmission.collection.find(filter).toArray();
+    const submissions = await QuizSubmission.collection
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .toArray();
+
     let averageScore = 0;
 
     if (submissions.length > 0) {
-      const totalPercentage = submissions.reduce((acc, sub) => {
+      const totalPct = submissions.reduce((acc, sub) => {
+        if (typeof sub.percentage === 'number' && !Number.isNaN(sub.percentage)) {
+          return acc + sub.percentage;
+        }
         const totalQ = Number(sub.totalQuestions) || 0;
         const scoreVal = Number(sub.score) || 0;
-        const percentage = totalQ > 0 ? (scoreVal / totalQ) * 100 : 0;
-        return acc + percentage;
+        return acc + (totalQ > 0 ? (scoreVal / totalQ) * 100 : 0);
       }, 0);
-      averageScore = Math.round(totalPercentage / submissions.length);
+      averageScore = Math.round(totalPct / submissions.length);
     }
 
     const [recentQuizzes, recentDocuments, recentSubmissions] = await Promise.all([
@@ -56,7 +63,7 @@ export const getDashboardOverview = async (req, res) => {
         .find(filter)
         .sort({ createdAt: -1 })
         .limit(5)
-        .project({ title: 1, createdAt: 1 })
+        .project({ title: 1, topic: 1, difficulty: 1, createdAt: 1 })
         .toArray(),
       Document.find(filter)
         .sort({ uploadDate: -1, createdAt: -1 })
@@ -66,7 +73,7 @@ export const getDashboardOverview = async (req, res) => {
       QuizSubmission.collection
         .find(filter)
         .sort({ createdAt: -1 })
-        .limit(5)
+        .limit(20)
         .toArray(),
     ]);
 
@@ -79,6 +86,7 @@ export const getDashboardOverview = async (req, res) => {
           totalDocuments: Number(totalDocuments) || 0,
           totalSubmissions: Number(totalSubmissions) || 0,
           averageScore: Number(averageScore) || 0,
+          averageScorePercentage: `${Number(averageScore) || 0}%`,
         },
         recentActivity: {
           quizzes: recentQuizzes,

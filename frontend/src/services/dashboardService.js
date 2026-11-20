@@ -1,17 +1,52 @@
 import axios from 'axios';
 
-const API_BASE_URL =
-  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:8000/api'
-    : '/api';
+// Fetch dashboard overview and compute percentage average score with local storage fallback
+export const getDashboardOverview = async (userId) => {
+  try {
+    const url = userId
+      ? `http://localhost:8000/api/dashboard/${userId}`
+      : 'http://localhost:8000/api/dashboard/overview';
+    const res = await axios.get(url);
+    const payload = res.data;
 
-const API_URL = `${API_BASE_URL}/dashboard`;
+    if (payload?.data?.stats) {
+      const avg = Number(payload.data.stats.averageScore) || 0;
+      payload.data.stats.averageScore = avg;
+      payload.data.stats.averageScorePercentage = `${avg}%`;
+    }
 
-// Fetch dashboard overview stats for a specific user
-export const getDashboardOverview = async (userId = '') => {
-  const url = userId
-    ? `${API_URL}/overview?userId=${encodeURIComponent(userId)}`
-    : `${API_URL}/overview`;
-  const response = await axios.get(url);
-  return response.data;
+    return payload;
+  } catch {
+    const rawSubs = localStorage.getItem('quiz_submissions_list');
+    const submissions = rawSubs ? JSON.parse(rawSubs) : [];
+    const safeSubs = Array.isArray(submissions) ? submissions : [];
+
+    const avgScore =
+      safeSubs.length > 0
+        ? Math.round(
+            safeSubs.reduce((acc, s) => {
+              if (typeof s.percentage === 'number' && !Number.isNaN(s.percentage)) {
+                return acc + s.percentage;
+              }
+              const totalQ = Number(s.totalQuestions) || 0;
+              const scoreVal = Number(s.score) || 0;
+              return acc + (totalQ > 0 ? (scoreVal / totalQ) * 100 : 0);
+            }, 0) / safeSubs.length
+          )
+        : 0;
+
+    return {
+      success: true,
+      offlineFallback: true,
+      data: {
+        avgScore,
+        submissions: safeSubs,
+        stats: {
+          averageScore: avgScore,
+          averageScorePercentage: `${avgScore}%`,
+          totalSubmissions: safeSubs.length,
+        },
+      },
+    };
+  }
 };

@@ -1,20 +1,26 @@
 import express from 'express';
 import {
-  generateAIQuiz,
-  getAllQuizzes,
+  generateQuiz,
+  getQuizzes,
   getQuizById,
   submitQuiz,
-  getQuizResults,
+  getAllSubmissions,
+  deleteQuizSubmission,
+  getQuizSubmissions,
   deleteQuiz,
+  saveFlashcardsFromQuiz,
 } from '../controllers/quizController.js';
 
 const router = express.Router();
 
-router.post('/generate', generateAIQuiz);
-router.get('/', getAllQuizzes);
-router.get('/:id', getQuizById);
+router.post('/generate', generateQuiz);
 router.post('/submit', submitQuiz);
-router.get('/:quizId/results', getQuizResults);
+router.get('/submissions/all', getAllSubmissions);
+router.delete('/submissions/:submissionId', deleteQuizSubmission);
+router.post('/save-flashcards', saveFlashcardsFromQuiz);
+router.get('/', getQuizzes);
+router.get('/:id', getQuizById);
+router.get('/:quizId/submissions', getQuizSubmissions);
 router.delete('/:id', deleteQuiz);
 
 export default router;

@@ -1,58 +1,115 @@
 import mongoose from 'mongoose';
 
-// Quiz Schema
+const questionSchema = new mongoose.Schema(
+  {
+    id: { type: String },
+    question: { type: String, required: true },
+    options: { type: [String], default: [] },
+    correctAnswer: { type: String, required: true },
+    explanation: { type: String, default: '' },
+  },
+  { _id: false }
+);
+
+const answerSchema = new mongoose.Schema(
+  {
+    questionIndex: { type: Number, required: true },
+    selectedAnswer: { type: String, default: '' },
+    correctAnswer: { type: String, default: '' },
+    isCorrect: { type: Boolean, default: false },
+    explanation: { type: String, default: '' },
+  },
+  { _id: false }
+);
+
 const quizSchema = new mongoose.Schema(
   {
     userId: {
       type: String,
-      required: false,
+      default: null,
+      index: true,
+    },
+    documentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Document',
+      default: null,
+    },
+    title: {
+      type: String,
+      required: true,
+    },
+    topic: {
+      type: String,
+      default: 'Study Quiz',
+    },
+    category: {
+      type: String,
+      default: 'Most Important (Mixed)',
+    },
+    difficulty: {
+      type: String,
+      enum: ['Easy', 'Medium', 'Hard'],
+      default: 'Medium',
+    },
+    questions: {
+      type: [questionSchema],
+      default: [],
+    },
+  },
+  { timestamps: true }
+);
+
+const quizSubmissionSchema = new mongoose.Schema(
+  {
+    quizId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Quiz',
+      default: null,
+    },
+    userId: {
+      type: String,
+      default: null,
       index: true,
     },
     title: {
       type: String,
-      default: 'AI Generated Quiz',
+      default: 'Study Quiz',
     },
-    questions: [
-      {
-        question: { type: String, required: true },
-        options: [{ type: String, required: true }],
-        correctAnswer: { type: String, required: true },
-      },
-    ],
-  },
-  { timestamps: true }
-);
-
-// Quiz Submission Schema
-const quizSubmissionSchema = new mongoose.Schema(
-  {
-    userId: {
+    topic: {
       type: String,
-      index: true,
+      default: 'Study Quiz',
     },
-    quizId: {
-      type: mongoose.Schema.Types.Mixed,
-      ref: 'Quiz',
-      required: true,
+    category: {
+      type: String,
+      default: 'Most Important (Mixed)',
+    },
+    difficulty: {
+      type: String,
+      default: 'Medium',
+    },
+    answers: {
+      type: [answerSchema],
+      default: [],
     },
     score: {
       type: Number,
-      required: true,
+      default: 0,
     },
     totalQuestions: {
       type: Number,
-      required: true,
+      default: 0,
     },
-    answers: [
-      {
-        questionIndex: Number,
-        selectedAnswer: String,
-        isCorrect: Boolean,
-      },
-    ],
+    percentage: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
 
-export const Quiz = mongoose.model('Quiz', quizSchema);
-export const QuizSubmission = mongoose.model('QuizSubmission', quizSubmissionSchema);
+export const Quiz = mongoose.models.Quiz || mongoose.model('Quiz', quizSchema);
+export const QuizSubmission =
+  mongoose.models.QuizSubmission ||
+  mongoose.model('QuizSubmission', quizSubmissionSchema);
+
+export default Quiz;

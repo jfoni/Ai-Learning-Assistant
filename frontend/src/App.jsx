@@ -57,15 +57,15 @@ export default function App() {
               }
             />
             <Route
-              path="/quizzes"
+              path="/flashcards/:id"
               element={
                 <ProtectedRoute>
-                  <QuizTakePage />
+                  <FlashcardPage />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/quizzes/:id"
+              path="/quizzes"
               element={
                 <ProtectedRoute>
                   <QuizTakePage />
@@ -77,6 +77,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <QuizResultPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quizzes/:id"
+              element={
+                <ProtectedRoute>
+                  <QuizTakePage />
                 </ProtectedRoute>
               }
             />
