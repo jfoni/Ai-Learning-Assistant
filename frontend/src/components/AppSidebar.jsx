@@ -11,6 +11,7 @@ import {
   Target,
   SearchCheck,
   Sparkles,
+  GraduationCap,
   User,
   LogOut,
   X,
@@ -21,6 +22,7 @@ const SIDEBAR_SUBTITLE = 'Personal Study Space';
 const NAV_ITEMS = [
   { label: 'Overview', to: '/dashboard', icon: TrendingUp },
   { label: 'Universal Assistant', to: '/assistant', icon: Sparkles },
+  { label: 'Teach Me', to: '/teach-me', icon: GraduationCap },
   { label: 'Documents', to: '/documents', icon: FileText },
   { label: 'Flashcards', to: '/flashcards', icon: BrainCircuit },
   { label: 'Quizzes', to: '/quizzes', icon: BookOpen },
@@ -52,14 +54,12 @@ export default function AppSidebar({ isOpen, onClose }) {
 
   return (
     <>
-      {/* Backdrop when sidebar is open */}
       <div
         onClick={onClose}
         className="fixed inset-0 bg-black/30 z-30 transition-opacity"
         aria-hidden="true"
       />
 
-      {/* Collapsible sidebar */}
       <aside
         className={`fixed md:static top-0 left-0 h-screen md:min-h-screen w-72 border-r p-6 flex flex-col justify-between shadow-xl z-40 shrink-0 ${
           isDark
@@ -69,7 +69,6 @@ export default function AppSidebar({ isOpen, onClose }) {
         style={{ fontSize: '18px' }}
       >
         <div>
-          {/* Brand header */}
           <div className="flex items-center justify-between mb-9 px-1">
             <div className="flex items-center gap-3 min-w-0">
               <div
@@ -114,7 +113,6 @@ export default function AppSidebar({ isOpen, onClose }) {
             </button>
           </div>
 
-          {/* Navigation links */}
           <nav className="space-y-2.5">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
@@ -164,7 +162,6 @@ export default function AppSidebar({ isOpen, onClose }) {
               );
             })}
 
-            {/* Pill-shaped Profile link that stays neutral by default and highlights only when active or hovered */}
             <Link
               to={PROFILE_ITEM.to}
               onClick={onClose}
@@ -204,7 +201,6 @@ export default function AppSidebar({ isOpen, onClose }) {
           </nav>
         </div>
 
-        {/* Sign out button */}
         <div
           className={`pt-6 border-t ${
             isDark ? 'border-[#2C313C]' : 'border-[#D5DDE0]'

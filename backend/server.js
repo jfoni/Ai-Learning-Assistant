@@ -17,7 +17,7 @@ import quizRoutes from './routes/quizRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import universalAssistantRoutes from './routes/universalAssistantRoutes.js';
 import knowledgeGapRoutes from './routes/knowledgeGapRoutes.js';
-
+import teachMeRoutes from './routes/teachMeRoutes.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -54,7 +54,7 @@ app.use('/api/quizzes', quizRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/assistant', universalAssistantRoutes);
 app.use('/api/knowledge-gaps', knowledgeGapRoutes);
-
+app.use('/api/teach-me', teachMeRoutes);
 // Error Handler Middleware
 app.use(errorHandler);
 

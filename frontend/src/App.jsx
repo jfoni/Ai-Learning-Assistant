@@ -16,7 +16,7 @@ import ImprovementPage from './pages/Improvement/ImprovementPage';
 import KnowledgeGapPage from './pages/KnowledgeGapPage';
 import UniversalAssistantPage from './pages/UniversalAssistantPage';
 import ProfilePage from './pages/Profile/ProfilePage';
-
+import TeachMePage from './pages/TeachMePage';
 export default function App() {
   return (
     <ThemeProvider>
@@ -122,6 +122,14 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+  path="/teach-me"
+  element={
+    <ProtectedRoute>
+      <TeachMePage />
+    </ProtectedRoute>
+  }
+/>
           </Routes>
         </Router>
       </AuthProvider>
