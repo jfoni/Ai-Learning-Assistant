@@ -540,7 +540,7 @@ export default function TeachMePage() {
                     <span>
                       {submitting
                         ? 'Evaluating Explanation...'
-                        : 'Submit Explanation to Teacher'}
+                        : 'Submit Explanation'}
                     </span>
                   </button>
                 </div>
@@ -588,7 +588,7 @@ export default function TeachMePage() {
                           {activeSession.topic} • {activeSession.difficulty}
                         </span>
                         <h2 className="font-black mt-0.5" style={{ fontSize: '30px' }}>
-                          Teacher Evaluation
+                          Concept Check Feedback
                         </h2>
                       </div>
 
@@ -769,7 +769,7 @@ export default function TeachMePage() {
                         }`}
                       />
                       <h2 className="font-black" style={{ fontSize: '28px' }}>
-                        Teacher Check-In &amp; Guidance
+                        Ai Check-In &amp; Guidance
                       </h2>
                     </div>
 

@@ -145,7 +145,7 @@ Return ONLY valid JSON matching this exact structure:
       dialogue: evaluation.followUpQuestion
         ? [
             {
-              role: 'teacher',
+              role: 'Ai Tutor',
               actionType: 'evaluate',
               content: evaluation.followUpQuestion,
             },
