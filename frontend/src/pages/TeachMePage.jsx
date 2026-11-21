@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../services/firebase';
 import {
@@ -11,6 +12,7 @@ import { useTheme } from '../context/ThemeContext';
 import AppSidebar from '../components/AppSidebar';
 import {
   Menu,
+  ArrowLeft,
   GraduationCap,
   FileText,
   Edit3,
@@ -61,6 +63,7 @@ const getScoreBadgeClasses = (score, isDark) => {
 
 export default function TeachMePage() {
   const { isDark } = useTheme();
+  const navigate = useNavigate();
 
   const [userId, setUserId] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -87,6 +90,14 @@ export default function TeachMePage() {
   const selectedDocument =
     documents.find((d) => String(d._id || d.id) === String(selectedDocId)) ||
     null;
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/overview');
+    }
+  };
 
   const loadHistory = useCallback(async (uid) => {
     if (!uid) {
@@ -286,29 +297,29 @@ export default function TeachMePage() {
       : null;
 
   const surfaceClass = isDark
-    ? 'bg-[#171A21] border-[#2C313C] text-[#F3F4F6]'
+    ? 'bg-[#231F2C] border-purple-400/20 text-[#F3F0FA]'
     : 'bg-white/95 border-[#54626f]/20 text-[#1F2118]';
 
   const nestedSurfaceClass = isDark
-    ? 'bg-[#12141A] border-[#2E3542] text-[#E5E7EB]'
+    ? 'bg-[#1B1723] border-purple-400/15 text-[#EAE5F5]'
     : 'bg-[#f8fafb] border-[#54626f]/15 text-[#1F2118]';
 
   const inputClass = isDark
-    ? 'bg-[#12141A] border-[#2E3542] text-[#F3F4F6] placeholder-[#6B7280] focus:border-[#7EC4CF]'
+    ? 'bg-[#1B1723] border-purple-400/25 text-[#F3F0FA] placeholder-[#9B92AE] focus:border-purple-300'
     : 'bg-[#f8fafb] border-[#54626f]/25 text-[#1F2118] placeholder-[#6B7280] focus:border-[#54626f]';
 
   const primaryBtnClass = isDark
-    ? 'bg-[#7EC4CF] text-black hover:bg-[#93D1DA]'
+    ? 'bg-purple-300 text-[#18151F] hover:bg-purple-200'
     : 'bg-[#54626f] text-white hover:bg-[#1F2118]';
 
   const secondaryBtnClass = isDark
-    ? 'bg-[#222732] text-[#E5E7EB] hover:bg-[#2C3240]'
+    ? 'bg-[#2E283D] text-[#EDE8F8] hover:bg-[#3A324D]'
     : 'bg-[#e2eaeb] text-[#1F2118] hover:bg-[#d2dee0]';
 
   return (
     <div
       className={`min-h-screen flex relative ${
-        isDark ? 'bg-[#12141A] text-[#F3F4F6]' : 'bg-[#e2eaeb] text-[#1F2118]'
+        isDark ? 'bg-[#18151F] text-[#F3F0FA]' : 'bg-[#e2eaeb] text-[#1F2118]'
       }`}
       style={{ fontSize: '23px' }}
     >
@@ -334,7 +345,7 @@ export default function TeachMePage() {
                 <div className="flex items-center gap-2.5">
                   <GraduationCap
                     className={`w-8 h-8 shrink-0 ${
-                      isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                      isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                     }`}
                   />
                   <h1
@@ -346,7 +357,7 @@ export default function TeachMePage() {
                 </div>
                 <p
                   className={`mt-1 ${
-                    isDark ? 'text-[#D1D5DB]' : 'text-[#54626f]'
+                    isDark ? 'text-[#C5BCE0]' : 'text-[#54626f]'
                   }`}
                   style={{ fontSize: '21px' }}
                 >
@@ -354,6 +365,20 @@ export default function TeachMePage() {
                 </p>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={handleBack}
+              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border font-bold transition cursor-pointer shrink-0 ml-auto ${
+                isDark
+                  ? 'bg-[#2E283D] border-purple-400/20 text-[#F3F0FA] hover:bg-[#3A324D]'
+                  : 'bg-[#e2eaeb] border-[#54626f]/20 text-[#1F2118] hover:bg-[#d2dee0]'
+              }`}
+              style={{ fontSize: '18px' }}
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back</span>
+            </button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -368,7 +393,7 @@ export default function TeachMePage() {
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <span
                       className={`font-extrabold uppercase tracking-wider ${
-                        isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                        isDark ? 'text-purple-300/80' : 'text-[#54626f]'
                       }`}
                       style={{ fontSize: '15px' }}
                     >
@@ -501,7 +526,7 @@ export default function TeachMePage() {
                     </label>
                     <span
                       className={`font-semibold ${
-                        isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                        isDark ? 'text-[#B5ACC9]' : 'text-[#54626f]'
                       }`}
                       style={{ fontSize: '18px' }}
                     >
@@ -522,7 +547,7 @@ export default function TeachMePage() {
 
                 {errorMsg && (
                   <div
-                    className="rounded-2xl border border-rose-500/40 bg-rose-500/10 text-rose-500 px-4 py-3 font-bold"
+                    className="rounded-2xl border border-rose-500/40 bg-rose-500/10 text-rose-400 px-4 py-3 font-bold"
                     style={{ fontSize: '20px' }}
                   >
                     {cleanDisplayText(errorMsg)}
@@ -553,7 +578,7 @@ export default function TeachMePage() {
                 >
                   <BookOpenCheck
                     className={`w-12 h-12 mx-auto ${
-                      isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                      isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                     }`}
                   />
                   <h2 className="font-black" style={{ fontSize: '28px' }}>
@@ -561,7 +586,7 @@ export default function TeachMePage() {
                   </h2>
                   <p
                     className={`max-w-xl mx-auto ${
-                      isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                      isDark ? 'text-[#B5ACC9]' : 'text-[#54626f]'
                     }`}
                     style={{ fontSize: '21px' }}
                   >
@@ -581,7 +606,7 @@ export default function TeachMePage() {
                       <div>
                         <span
                           className={`font-extrabold uppercase tracking-wider ${
-                            isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                            isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                           }`}
                           style={{ fontSize: '15px' }}
                         >
@@ -597,8 +622,8 @@ export default function TeachMePage() {
                           <span
                             className={`inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full font-extrabold border ${
                               scoreDelta >= 0
-                                ? 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30'
-                                : 'bg-rose-500/15 text-rose-500 border-rose-500/30'
+                                ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                                : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
                             }`}
                             style={{ fontSize: '18px' }}
                           >
@@ -629,7 +654,7 @@ export default function TeachMePage() {
                     {evaluation.summary && (
                       <p
                         className={`leading-relaxed m-0 ${
-                          isDark ? 'text-[#E5E7EB]' : 'text-[#374151]'
+                          isDark ? 'text-[#EAE5F5]' : 'text-[#374151]'
                         }`}
                         style={{ fontSize: '22px' }}
                       >
@@ -641,7 +666,7 @@ export default function TeachMePage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                       {/* Explained Correctly */}
                       <div className={`rounded-2xl border p-5 ${nestedSurfaceClass}`}>
-                        <div className="flex items-center gap-2 font-black text-emerald-500 mb-3" style={{ fontSize: '22px' }}>
+                        <div className="flex items-center gap-2 font-black text-emerald-400 mb-3" style={{ fontSize: '22px' }}>
                           <CheckCircle2 className="w-5 h-5 shrink-0" />
                           <span>Explained Correctly</span>
                         </div>
@@ -662,7 +687,7 @@ export default function TeachMePage() {
 
                       {/* Missing Points */}
                       <div className={`rounded-2xl border p-5 ${nestedSurfaceClass}`}>
-                        <div className="flex items-center gap-2 font-black text-amber-500 mb-3" style={{ fontSize: '22px' }}>
+                        <div className="flex items-center gap-2 font-black text-amber-400 mb-3" style={{ fontSize: '22px' }}>
                           <AlertCircle className="w-5 h-5 shrink-0" />
                           <span>Important Missing Points</span>
                         </div>
@@ -683,7 +708,7 @@ export default function TeachMePage() {
 
                       {/* Misconceptions */}
                       <div className={`rounded-2xl border p-5 ${nestedSurfaceClass}`}>
-                        <div className="flex items-center gap-2 font-black text-rose-500 mb-3" style={{ fontSize: '22px' }}>
+                        <div className="flex items-center gap-2 font-black text-rose-400 mb-3" style={{ fontSize: '22px' }}>
                           <AlertCircle className="w-5 h-5 shrink-0" />
                           <span>Misconceptions &amp; Mistakes</span>
                         </div>
@@ -706,7 +731,7 @@ export default function TeachMePage() {
                       <div className={`rounded-2xl border p-5 ${nestedSurfaceClass}`}>
                         <div
                           className={`flex items-center gap-2 font-black mb-3 ${
-                            isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                            isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                           }`}
                           style={{ fontSize: '22px' }}
                         >
@@ -765,7 +790,7 @@ export default function TeachMePage() {
                     <div className="flex items-center gap-2.5">
                       <MessageCircle
                         className={`w-6 h-6 ${
-                          isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                          isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                         }`}
                       />
                       <h2 className="font-black" style={{ fontSize: '28px' }}>
@@ -797,7 +822,7 @@ export default function TeachMePage() {
                                 isTeacher
                                   ? nestedSurfaceClass
                                   : isDark
-                                  ? 'bg-[#22313A] border-[#7EC4CF]/40 text-[#F3F4F6]'
+                                  ? 'bg-[#342C47] border-purple-300/40 text-[#F3F0FA]'
                                   : 'bg-[#54626f] border-[#54626f] text-white'
                               }`}
                               style={{ fontSize: '21px' }}
@@ -815,7 +840,11 @@ export default function TeachMePage() {
                     )}
 
                     {/* Confusing Part & Support Actions */}
-                    <div className="space-y-3 pt-2 border-t border-[#54626f]/20">
+                    <div
+                      className={`space-y-3 pt-2 border-t ${
+                        isDark ? 'border-purple-400/20' : 'border-[#54626f]/20'
+                      }`}
+                    >
                       <label
                         htmlFor="teachme-confusing-input"
                         className="block font-bold"
@@ -907,7 +936,7 @@ export default function TeachMePage() {
                 <div className="flex items-center gap-2">
                   <History
                     className={`w-5 h-5 ${
-                      isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                      isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                     }`}
                   />
                   <h2 className="font-black" style={{ fontSize: '25px' }}>
@@ -918,7 +947,7 @@ export default function TeachMePage() {
                 {loadingHistory ? (
                   <p
                     className={`font-semibold ${
-                      isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                      isDark ? 'text-[#B5ACC9]' : 'text-[#54626f]'
                     }`}
                     style={{ fontSize: '20px' }}
                   >
@@ -926,7 +955,7 @@ export default function TeachMePage() {
                   </p>
                 ) : historySessions.length === 0 ? (
                   <p
-                    className={`${isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'}`}
+                    className={`${isDark ? 'text-[#B5ACC9]' : 'text-[#54626f]'}`}
                     style={{ fontSize: '20px' }}
                   >
                     Your teaching sessions and score progress will appear here after your first explanation.
@@ -945,7 +974,7 @@ export default function TeachMePage() {
                           className={`rounded-2xl border p-4 transition cursor-pointer space-y-2 ${
                             isCurrent
                               ? isDark
-                                ? 'bg-[#22313A] border-[#7EC4CF]/50'
+                                ? 'bg-[#342C47] border-purple-300/50'
                                 : 'bg-[#e2eaeb] border-[#54626f]/40'
                               : `${nestedSurfaceClass} hover:opacity-90`
                           }`}
@@ -970,7 +999,7 @@ export default function TeachMePage() {
 
                           <div
                             className={`flex items-center justify-between font-bold ${
-                              isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                              isDark ? 'text-[#B5ACC9]' : 'text-[#54626f]'
                             }`}
                             style={{ fontSize: '16px' }}
                           >

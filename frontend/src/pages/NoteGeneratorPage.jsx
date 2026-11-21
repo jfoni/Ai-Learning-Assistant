@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../services/firebase';
 import {
@@ -15,6 +16,7 @@ import AppSidebar from '../components/AppSidebar';
 import NoteContentViewer from '../components/NoteContentViewer';
 import {
   Menu,
+  ArrowLeft,
   NotebookPen,
   Upload,
   FileText,
@@ -68,8 +70,8 @@ const EXAMPLE_PALETTES = [
   },
   {
     light: 'bg-sky-50/90 border-sky-300 text-sky-950',
-    dark: 'bg-sky-950/35 border-sky-500/40 text-sky-100',
-    dot: 'bg-sky-500',
+    dark: 'bg-purple-950/35 border-purple-400/35 text-purple-100',
+    dot: 'bg-purple-400',
   },
   {
     light: 'bg-emerald-50/90 border-emerald-300 text-emerald-950',
@@ -78,8 +80,8 @@ const EXAMPLE_PALETTES = [
   },
   {
     light: 'bg-violet-50/90 border-violet-300 text-violet-950',
-    dark: 'bg-violet-950/35 border-violet-500/40 text-violet-100',
-    dot: 'bg-violet-500',
+    dark: 'bg-violet-950/35 border-violet-400/40 text-violet-100',
+    dot: 'bg-violet-400',
   },
   {
     light: 'bg-rose-50/90 border-rose-300 text-rose-950',
@@ -180,6 +182,7 @@ const getDocumentFileUrl = (doc) => {
 
 export default function NoteGeneratorPage() {
   const { isDark } = useTheme();
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
   const [userId, setUserId] = useState('');
@@ -240,6 +243,14 @@ export default function NoteGeneratorPage() {
   const currentlySelectedItem =
     activeSourceType === 'new_pdf' ? selectedNewPdf : selectedStoredDoc;
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/overview');
+    }
+  };
+
   const loadSavedNotes = useCallback(async (uid) => {
     if (!uid) {
       setSavedNotes([]);
@@ -288,7 +299,6 @@ export default function NoteGeneratorPage() {
     return () => unsub();
   }, [loadSavedNotes]);
 
-  // Clears current note display so user can generate a fresh note while keeping History intact
   const handleCreateNewNote = () => {
     setActiveNote(null);
     setIsEditing(false);
@@ -650,23 +660,23 @@ export default function NoteGeneratorPage() {
     /\.pdf$/i.test(viewerDoc?.fileName || '');
 
   const surfaceClass = isDark
-    ? 'bg-[#171A21] border-[#2C313C] text-[#F3F4F6]'
+    ? 'bg-[#231F2C] border-purple-400/20 text-[#F3F0FA]'
     : 'bg-white/95 border-[#54626f]/20 text-[#1F2118]';
 
   const nestedClass = isDark
-    ? 'bg-[#12141A] border-[#2E3542] text-[#E5E7EB]'
+    ? 'bg-[#1B1723] border-purple-400/15 text-[#EAE5F5]'
     : 'bg-[#f8fafb] border-[#54626f]/15 text-[#1F2118]';
 
   const inputClass = isDark
-    ? 'bg-[#12141A] border-[#2E3542] text-[#F3F4F6] placeholder-[#6B7280] focus:border-[#7EC4CF]'
+    ? 'bg-[#1B1723] border-purple-400/25 text-[#F3F0FA] placeholder-[#9B92AE] focus:border-purple-300'
     : 'bg-[#f8fafb] border-[#54626f]/25 text-[#1F2118] placeholder-[#6B7280] focus:border-[#54626f]';
 
   const primaryBtnClass = isDark
-    ? 'bg-[#7EC4CF] text-black hover:bg-[#93D1DA]'
+    ? 'bg-purple-300 text-[#18151F] hover:bg-purple-200'
     : 'bg-[#54626f] text-white hover:bg-[#1F2118]';
 
   const secondaryBtnClass = isDark
-    ? 'bg-[#222732] text-[#E5E7EB] hover:bg-[#2C3240]'
+    ? 'bg-[#2E283D] text-[#EDE8F8] hover:bg-[#3A324D]'
     : 'bg-[#e2eaeb] text-[#1F2118] hover:bg-[#d2dee0]';
 
   const renderSentenceBlocks = (rawText = '', extraClass = '') => {
@@ -679,7 +689,7 @@ export default function NoteGeneratorPage() {
           <React.Fragment key={bIdx}>
             <p
               className={`m-0 font-medium leading-relaxed ${
-                isDark ? 'text-[#E5E7EB]' : 'text-[#1F2118]'
+                isDark ? 'text-[#EAE5F5]' : 'text-[#1F2118]'
               } ${extraClass}`}
               style={{ fontSize: '20px', fontWeight: 500 }}
             >
@@ -709,14 +719,14 @@ export default function NoteGeneratorPage() {
               key={idx}
               className={`flex items-start gap-3 rounded-xl border px-4 py-3 ${
                 isDark
-                  ? 'bg-[#171A21] border-[#2E3542] text-[#F3F4F6]'
+                  ? 'bg-[#231F2C] border-purple-400/20 text-[#F3F0FA]'
                   : 'bg-white border-[#54626f]/20 text-[#1F2118]'
               }`}
               style={{ fontSize: '20px' }}
             >
               <span
                 className={`mt-1 shrink-0 font-bold ${
-                  isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                  isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                 }`}
                 style={{ fontSize: '18px' }}
               >
@@ -758,7 +768,7 @@ export default function NoteGeneratorPage() {
   return (
     <div
       className={`min-h-screen flex relative ${
-        isDark ? 'bg-[#12141A] text-[#F3F4F6]' : 'bg-[#e2eaeb] text-[#1F2118]'
+        isDark ? 'bg-[#18151F] text-[#F3F0FA]' : 'bg-[#e2eaeb] text-[#1F2118]'
       }`}
       style={{ fontSize: '20px', fontWeight: 500 }}
     >
@@ -788,7 +798,7 @@ export default function NoteGeneratorPage() {
                   <div className="flex items-center gap-2.5 flex-wrap">
                     <NotebookPen
                       className={`w-8 h-8 shrink-0 ${
-                        isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                        isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                       }`}
                     />
                     <h1
@@ -800,7 +810,7 @@ export default function NoteGeneratorPage() {
                   </div>
                   <p
                     className={`mt-1 font-medium ${
-                      isDark ? 'text-[#D1D5DB]' : 'text-[#54626f]'
+                      isDark ? 'text-[#C5BCE0]' : 'text-[#54626f]'
                     }`}
                     style={{ fontSize: '19px', fontWeight: 500 }}
                   >
@@ -809,15 +819,31 @@ export default function NoteGeneratorPage() {
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={handleCreateNewNote}
-                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold transition cursor-pointer shrink-0 ${primaryBtnClass}`}
-                style={{ fontSize: '17px', fontWeight: 700 }}
-              >
-                <Plus className="w-5 h-5" />
-                <span>Create New Note</span>
-              </button>
+              <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+                <button
+                  type="button"
+                  onClick={handleCreateNewNote}
+                  className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold transition cursor-pointer ${primaryBtnClass}`}
+                  style={{ fontSize: '17px', fontWeight: 700 }}
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Create New Note</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border font-bold transition cursor-pointer ${
+                    isDark
+                      ? 'bg-[#2E283D] border-purple-400/20 text-[#F3F0FA] hover:bg-[#3A324D]'
+                      : 'bg-[#e2eaeb] border-[#54626f]/20 text-[#1F2118] hover:bg-[#d2dee0]'
+                  }`}
+                  style={{ fontSize: '18px' }}
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Back</span>
+                </button>
+              </div>
             </div>
 
             {/* Search Bar */}
@@ -825,7 +851,7 @@ export default function NoteGeneratorPage() {
               <div className="relative flex items-center gap-2">
                 <Search
                   className={`w-5 h-5 absolute left-4 pointer-events-none ${
-                    isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                    isDark ? 'text-[#B5ACC9]' : 'text-[#54626f]'
                   }`}
                 />
                 <input
@@ -878,7 +904,7 @@ export default function NoteGeneratorPage() {
                   {searchMatches.length === 0 ? (
                     <p
                       className={`m-0 font-medium ${
-                        isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                        isDark ? 'text-[#B5ACC9]' : 'text-[#54626f]'
                       }`}
                       style={{ fontSize: '17px', fontWeight: 500 }}
                     >
@@ -904,7 +930,7 @@ export default function NoteGeneratorPage() {
                             onClick={(e) =>
                               handleDismissSearchResult(item._id, e)
                             }
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 font-semibold transition cursor-pointer shrink-0"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 font-semibold transition cursor-pointer shrink-0"
                             style={{ fontSize: '15px' }}
                           >
                             <Trash2 className="w-4 h-4" />
@@ -934,7 +960,7 @@ export default function NoteGeneratorPage() {
                   className={`rounded-2xl border p-4 space-y-2.5 transition ${
                     activeSourceType === 'document'
                       ? isDark
-                        ? 'bg-[#1A242B] border-[#7EC4CF]'
+                        ? 'bg-[#2E2740] border-purple-300/60'
                         : 'bg-[#f1f6f7] border-[#54626f]'
                       : nestedClass
                   }`}
@@ -947,7 +973,7 @@ export default function NoteGeneratorPage() {
                     >
                       <FolderOpen
                         className={`w-5 h-5 ${
-                          isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                          isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                         }`}
                       />
                       <span>Document</span>
@@ -1011,7 +1037,7 @@ export default function NoteGeneratorPage() {
                   className={`rounded-2xl border p-4 space-y-3 transition ${
                     activeSourceType === 'new_pdf' && newPdfs.length > 0
                       ? isDark
-                        ? 'bg-[#1A242B] border-[#7EC4CF]'
+                        ? 'bg-[#2E2740] border-purple-300/60'
                         : 'bg-[#f1f6f7] border-[#54626f]'
                       : nestedClass
                   }`}
@@ -1087,7 +1113,7 @@ export default function NoteGeneratorPage() {
                             className={`rounded-xl border px-3.5 py-2 flex items-center justify-between gap-2 cursor-pointer ${
                               isPicked
                                 ? isDark
-                                  ? 'bg-[#22313A] border-[#7EC4CF]/60'
+                                  ? 'bg-[#342C47] border-purple-300/60'
                                   : 'bg-[#e2eaeb] border-[#54626f]/50'
                                 : surfaceClass
                             }`}
@@ -1095,7 +1121,7 @@ export default function NoteGeneratorPage() {
                             <div className="flex items-center gap-2 min-w-0">
                               <FileText
                                 className={`w-4 h-4 shrink-0 ${
-                                  isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                                  isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                                 }`}
                               />
                               <span
@@ -1107,7 +1133,7 @@ export default function NoteGeneratorPage() {
                               {formatBytes(pdf.fileSize) && (
                                 <span
                                   className={`font-medium ${
-                                    isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                                    isDark ? 'text-[#B5ACC9]' : 'text-[#54626f]'
                                   }`}
                                   style={{ fontSize: '15px', fontWeight: 500 }}
                                 >
@@ -1120,7 +1146,7 @@ export default function NoteGeneratorPage() {
                               type="button"
                               aria-label="Delete added PDF"
                               onClick={(e) => handleDeleteNewPdf(pid, e)}
-                              className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/15 transition cursor-pointer shrink-0"
+                              className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/15 transition cursor-pointer shrink-0"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -1259,7 +1285,7 @@ export default function NoteGeneratorPage() {
 
                 {errorMsg && (
                   <div
-                    className="rounded-2xl border border-rose-500/40 bg-rose-500/10 text-rose-500 px-4 py-3 font-semibold"
+                    className="rounded-2xl border border-rose-500/40 bg-rose-500/10 text-rose-400 px-4 py-3 font-semibold"
                     style={{ fontSize: '18px', fontWeight: 600 }}
                   >
                     {cleanText(errorMsg)}
@@ -1268,7 +1294,7 @@ export default function NoteGeneratorPage() {
 
                 {statusMsg && (
                   <div
-                    className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-500 px-4 py-3 font-semibold"
+                    className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 px-4 py-3 font-semibold"
                     style={{ fontSize: '18px', fontWeight: 600 }}
                   >
                     {cleanText(statusMsg)}
@@ -1309,7 +1335,7 @@ export default function NoteGeneratorPage() {
                 >
                   <BookOpen
                     className={`w-12 h-12 mx-auto ${
-                      isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                      isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                     }`}
                   />
                   <h2
@@ -1320,7 +1346,7 @@ export default function NoteGeneratorPage() {
                   </h2>
                   <p
                     className={`max-w-xl mx-auto font-medium ${
-                      isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                      isDark ? 'text-[#B5ACC9]' : 'text-[#54626f]'
                     }`}
                     style={{ fontSize: '19px', fontWeight: 500 }}
                   >
@@ -1333,11 +1359,15 @@ export default function NoteGeneratorPage() {
                 <div
                   className={`border rounded-3xl p-6 shadow-sm space-y-6 ${surfaceClass}`}
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#54626f]/20 pb-4">
+                  <div
+                    className={`flex flex-wrap items-start justify-between gap-4 border-b pb-4 ${
+                      isDark ? 'border-purple-400/20' : 'border-[#54626f]/20'
+                    }`}
+                  >
                     <div className="space-y-1 min-w-0">
                       <span
                         className={`font-bold uppercase tracking-wider ${
-                          isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                          isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                         }`}
                         style={{ fontSize: '14px', fontWeight: 700 }}
                       >
@@ -1396,7 +1426,7 @@ export default function NoteGeneratorPage() {
                       >
                         {copiedId === String(activeNote._id) ? (
                           <>
-                            <Check className="w-4 h-4 text-emerald-500" />
+                            <Check className="w-4 h-4 text-emerald-400" />
                             <span>Copied</span>
                           </>
                         ) : (
@@ -1420,7 +1450,7 @@ export default function NoteGeneratorPage() {
                       <button
                         type="button"
                         onClick={(e) => handleDeleteHistoryNote(activeNote._id, e)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-semibold text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 transition cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 transition cursor-pointer"
                         style={{ fontSize: '16px' }}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -1491,7 +1521,7 @@ export default function NoteGeneratorPage() {
                                       key={sIdx}
                                       className={`px-3.5 py-1 rounded-full font-bold ${
                                         isDark
-                                          ? 'bg-[#222732] text-[#7EC4CF]'
+                                          ? 'bg-[#2E283D] text-purple-300'
                                           : 'bg-[#e2eaeb] text-[#1F2118]'
                                       }`}
                                       style={{ fontSize: '15px', fontWeight: 700 }}
@@ -1561,7 +1591,7 @@ export default function NoteGeneratorPage() {
                                   {sec.advantages?.length > 0 && (
                                     <div className="space-y-2">
                                       <div
-                                        className="font-bold text-emerald-500"
+                                        className="font-bold text-emerald-400"
                                         style={{ fontSize: '18px', fontWeight: 700 }}
                                       >
                                         Advantages
@@ -1572,7 +1602,7 @@ export default function NoteGeneratorPage() {
                                   {sec.disadvantages?.length > 0 && (
                                     <div className="space-y-2">
                                       <div
-                                        className="font-bold text-rose-500"
+                                        className="font-bold text-rose-400"
                                         style={{ fontSize: '18px', fontWeight: 700 }}
                                       >
                                         Disadvantages
@@ -1599,7 +1629,7 @@ export default function NoteGeneratorPage() {
                                 <pre
                                   className={`rounded-xl border p-4 overflow-x-auto font-mono font-medium m-0 ${
                                     isDark
-                                      ? 'bg-[#171A21] border-[#2C313C] text-[#E5E7EB]'
+                                      ? 'bg-[#231F2C] border-purple-400/20 text-[#EAE5F5]'
                                       : 'bg-white border-[#54626f]/20 text-[#1F2118]'
                                   }`}
                                   style={{ fontSize: '17px', fontWeight: 500 }}
@@ -1612,7 +1642,7 @@ export default function NoteGeneratorPage() {
                                 <pre
                                   className={`rounded-xl border p-4 overflow-x-auto font-mono font-medium m-0 ${
                                     isDark
-                                      ? 'bg-[#0D0F14] border-[#2C313C] text-[#7EC4CF]'
+                                      ? 'bg-[#14111A] border-purple-400/20 text-purple-300'
                                       : 'bg-[#1F2118] border-[#1F2118] text-[#F3F4F6]'
                                   }`}
                                   style={{ fontSize: '17px', fontWeight: 500 }}
@@ -1625,7 +1655,7 @@ export default function NoteGeneratorPage() {
                                 <div
                                   className={`rounded-2xl border p-4 sm:p-5 space-y-3 ${
                                     isDark
-                                      ? 'bg-[#181C24] border-[#343C4B]'
+                                      ? 'bg-[#241F30] border-purple-400/20'
                                       : 'bg-[#FFFDF8] border-[#E5DEC9]'
                                   }`}
                                 >
@@ -1637,7 +1667,7 @@ export default function NoteGeneratorPage() {
                                     }`}
                                     style={{ fontSize: '19px', fontWeight: 700 }}
                                   >
-                                    <Lightbulb className="w-5 h-5 shrink-0 text-amber-500" />
+                                    <Lightbulb className="w-5 h-5 shrink-0 text-amber-400" />
                                     <span>Examples &amp; Applications</span>
                                   </div>
 
@@ -1721,7 +1751,7 @@ export default function NoteGeneratorPage() {
                                   <div
                                     className={`flex items-center gap-1.5 font-bold ${
                                       isDark
-                                        ? 'text-[#7EC4CF]'
+                                        ? 'text-purple-300'
                                         : 'text-[#2F5D68]'
                                     }`}
                                     style={{ fontSize: '19px', fontWeight: 700 }}
@@ -1799,7 +1829,7 @@ export default function NoteGeneratorPage() {
                             className={`rounded-2xl border p-5 space-y-3 ${nestedClass}`}
                           >
                             <div
-                              className="flex items-center gap-2 font-bold text-emerald-500"
+                              className="flex items-center gap-2 font-bold text-emerald-400"
                               style={{ fontSize: '21px', fontWeight: 700 }}
                             >
                               <ListChecks className="w-5 h-5 shrink-0" />
@@ -1815,7 +1845,7 @@ export default function NoteGeneratorPage() {
                           className={`rounded-2xl border p-5 space-y-3 ${nestedClass}`}
                         >
                           <div
-                            className="flex items-center gap-2 font-bold text-amber-500"
+                            className="flex items-center gap-2 font-bold text-amber-400"
                             style={{ fontSize: '20px', fontWeight: 700 }}
                           >
                             <AlertTriangle className="w-5 h-5 shrink-0" />
@@ -1838,7 +1868,7 @@ export default function NoteGeneratorPage() {
                 <div className="flex items-center gap-2">
                   <History
                     className={`w-6 h-6 ${
-                      isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                      isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                     }`}
                   />
                   <h2
@@ -1852,7 +1882,7 @@ export default function NoteGeneratorPage() {
                 {loadingNotes ? (
                   <p
                     className={`font-medium ${
-                      isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                      isDark ? 'text-[#B5ACC9]' : 'text-[#54626f]'
                     }`}
                     style={{ fontSize: '18px', fontWeight: 500 }}
                   >
@@ -1861,7 +1891,7 @@ export default function NoteGeneratorPage() {
                 ) : savedNotes.length === 0 ? (
                   <p
                     className={`font-medium ${
-                      isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                      isDark ? 'text-[#B5ACC9]' : 'text-[#54626f]'
                     }`}
                     style={{ fontSize: '18px', fontWeight: 500 }}
                   >
@@ -1880,7 +1910,7 @@ export default function NoteGeneratorPage() {
                           className={`rounded-2xl border p-4 transition cursor-pointer space-y-2 ${
                             isSelected
                               ? isDark
-                                ? 'bg-[#22313A] border-[#7EC4CF]/50'
+                                ? 'bg-[#342C47] border-purple-300/50'
                                 : 'bg-[#e2eaeb] border-[#54626f]/40'
                               : `${nestedClass} hover:opacity-90`
                           }`}
@@ -1898,7 +1928,7 @@ export default function NoteGeneratorPage() {
                               onClick={(e) =>
                                 handleDeleteHistoryNote(note._id, e)
                               }
-                              className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/15 transition cursor-pointer shrink-0"
+                              className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/15 transition cursor-pointer shrink-0"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -1906,7 +1936,7 @@ export default function NoteGeneratorPage() {
 
                           <p
                             className={`m-0 truncate font-medium ${
-                              isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                              isDark ? 'text-[#B5ACC9]' : 'text-[#54626f]'
                             }`}
                             style={{ fontSize: '16px', fontWeight: 500 }}
                           >
@@ -1915,7 +1945,7 @@ export default function NoteGeneratorPage() {
 
                           <div
                             className={`flex items-center justify-between font-semibold ${
-                              isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                              isDark ? 'text-[#B5ACC9]' : 'text-[#54626f]'
                             }`}
                             style={{ fontSize: '15px', fontWeight: 600 }}
                           >
@@ -1939,11 +1969,15 @@ export default function NoteGeneratorPage() {
           <div
             className={`w-full max-w-5xl h-[85vh] border rounded-3xl shadow-xl flex flex-col overflow-hidden ${surfaceClass}`}
           >
-            <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-[#54626f]/20">
+            <div
+              className={`flex items-center justify-between gap-3 px-6 py-4 border-b ${
+                isDark ? 'border-purple-400/20' : 'border-[#54626f]/20'
+              }`}
+            >
               <div className="flex items-center gap-2.5 min-w-0">
                 <FileText
                   className={`w-5 h-5 shrink-0 ${
-                    isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                    isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                   }`}
                 />
                 <h3

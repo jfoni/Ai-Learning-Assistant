@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../services/firebase';
 import {
@@ -11,6 +12,7 @@ import { useTheme } from '../context/ThemeContext';
 import AppSidebar from '../components/AppSidebar';
 import {
   Menu,
+  ArrowLeft,
   Send,
   FileText,
   Sparkles,
@@ -105,7 +107,7 @@ function FormattedMessageContent({ content, isDark, keepImageEmpty = false }) {
               key={idx}
               className={`list-disc pl-7 space-y-3 m-0 rounded-2xl p-4 border ${
                 isDark
-                  ? 'bg-[#171A21]/90 border-[#2C313C] marker:text-[#7EC4CF] text-[#F3F4F6]'
+                  ? 'bg-[#231F2C]/90 border-purple-400/20 marker:text-purple-300 text-[#F3F0FA]'
                   : 'bg-white border-[#54626f]/20 marker:text-[#2F5D68] text-[#1F2118]'
               }`}
               style={{ fontSize: '21px' }}
@@ -135,7 +137,7 @@ function FormattedMessageContent({ content, isDark, keepImageEmpty = false }) {
           aria-label="Empty image area"
           className={`w-full min-h-[140px] rounded-2xl border border-dashed ${
             isDark
-              ? 'border-[#2E3542] bg-[#171A21]/50'
+              ? 'border-purple-400/30 bg-[#1B1723]/60'
               : 'border-[#54626f]/30 bg-white/60'
           }`}
         />
@@ -146,6 +148,7 @@ function FormattedMessageContent({ content, isDark, keepImageEmpty = false }) {
 
 export default function UniversalAssistantPage() {
   const { isDark } = useTheme();
+  const navigate = useNavigate();
   const messagesEndRef = useRef(null);
 
   const [userId, setUserId] = useState('');
@@ -176,6 +179,14 @@ export default function UniversalAssistantPage() {
   const selectedDocument =
     documents.find((d) => String(d._id || d.id) === String(selectedDocId)) ||
     null;
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/overview');
+    }
+  };
 
   const persistConversations = useCallback((uid, nextList) => {
     setConversations(nextList);
@@ -415,7 +426,7 @@ export default function UniversalAssistantPage() {
   return (
     <div
       className={`min-h-screen flex relative ${
-        isDark ? 'bg-[#12141A] text-[#F3F4F6]' : 'bg-[#e2eaeb] text-[#1F2118]'
+        isDark ? 'bg-[#18151F] text-[#F3F0FA]' : 'bg-[#e2eaeb] text-[#1F2118]'
       }`}
       style={{ fontSize: '23px' }}
     >
@@ -425,27 +436,27 @@ export default function UniversalAssistantPage() {
         <div className="max-w-6xl mx-auto space-y-6">
           {/* Top Header */}
           <div
-            className={`border rounded-3xl p-6 shadow-sm flex flex-wrap items-center justify-between gap-4 ${
+            className={`border rounded-3xl p-6 shadow-sm flex items-start justify-between gap-4 ${
               isDark
-                ? 'bg-[#171A21] border-[#2C313C]'
+                ? 'bg-[#231F2C] border-purple-400/20'
                 : 'bg-white/95 border-[#54626f]/20'
             }`}
           >
-            <div className="flex items-center gap-4">
+            <div className="flex items-start gap-4 min-w-0 flex-1">
               <button
                 type="button"
                 onClick={() => setIsSidebarOpen((prev) => !prev)}
                 aria-label="Toggle sidebar"
-                className={`w-12 h-12 rounded-2xl flex items-center justify-center transition cursor-pointer ${
+                className={`w-12 h-12 rounded-2xl border flex items-center justify-center transition cursor-pointer shrink-0 mt-1 ${
                   isDark
-                    ? 'bg-[#222732] text-[#E5E7EB] hover:bg-[#2C3240]'
-                    : 'bg-[#e2eaeb] text-[#1F2937] hover:bg-[#54626f] hover:text-white'
+                    ? 'bg-[#2E283D] border-purple-400/15 text-[#EDE8F8] hover:bg-[#3A324D]'
+                    : 'bg-[#e2eaeb] border-[#54626f]/15 text-[#1F2937] hover:bg-[#54626f] hover:text-white'
                 }`}
               >
                 <Menu className="w-6 h-6" />
               </button>
 
-              <div>
+              <div className="min-w-0 flex-1">
                 <h1
                   className="font-black tracking-tight"
                   style={{ fontSize: '40px', lineHeight: 1.2 }}
@@ -455,28 +466,44 @@ export default function UniversalAssistantPage() {
                 <p
                   className={`mt-1 ${
                     isDark
-                      ? 'text-[#D1D5DB] font-semibold'
+                      ? 'text-[#C5BCE0] font-semibold'
                       : 'text-[#54626f] font-medium'
                   }`}
                   style={{ fontSize: '21px' }}
                 >
                   Speaks English by default, switches to Bangla when you ask in Bangla, and keeps image areas empty
                 </p>
+
+                <div className="flex items-center gap-2.5 flex-wrap mt-4">
+                  <button
+                    type="button"
+                    onClick={() => handleNewChat(mode)}
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold transition cursor-pointer ${
+                      isDark
+                        ? 'bg-purple-300 text-[#18151F] hover:bg-purple-200 font-black'
+                        : 'bg-[#54626f] text-white hover:bg-[#1F2118]'
+                    }`}
+                    style={{ fontSize: '19px' }}
+                  >
+                    <Plus className="w-5 h-5" />
+                    <span>New Chat</span>
+                  </button>
+                </div>
               </div>
             </div>
 
             <button
               type="button"
-              onClick={() => handleNewChat(mode)}
-              className={`inline-flex items-center gap-2 px-5 py-3.5 rounded-2xl font-bold transition cursor-pointer ${
+              onClick={handleBack}
+              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border font-bold transition cursor-pointer shrink-0 ml-auto ${
                 isDark
-                  ? 'bg-[#7EC4CF] text-black hover:bg-[#93D1DA]'
-                  : 'bg-[#54626f] text-white hover:bg-[#1F2118]'
+                  ? 'bg-[#2E283D] border-purple-400/20 text-[#F3F0FA] hover:bg-[#3A324D]'
+                  : 'bg-[#e2eaeb] border-[#54626f]/20 text-[#1F2118] hover:bg-[#d2dee0]'
               }`}
-              style={{ fontSize: '20px' }}
+              style={{ fontSize: '18px' }}
             >
-              <Plus className="w-5 h-5" />
-              <span>New Chat</span>
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back</span>
             </button>
           </div>
 
@@ -484,7 +511,7 @@ export default function UniversalAssistantPage() {
           <div
             className={`border rounded-3xl p-5 shadow-sm space-y-4 ${
               isDark
-                ? 'bg-[#171A21] border-[#2C313C]'
+                ? 'bg-[#231F2C] border-purple-400/20'
                 : 'bg-white/95 border-[#54626f]/20'
             }`}
           >
@@ -496,10 +523,10 @@ export default function UniversalAssistantPage() {
                   className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold transition cursor-pointer ${
                     mode === 'general'
                       ? isDark
-                        ? 'bg-[#7EC4CF] text-black font-black'
+                        ? 'bg-purple-300 text-[#18151F] font-black'
                         : 'bg-[#54626f] text-white'
                       : isDark
-                      ? 'bg-[#222732] text-[#D1D5DB] hover:bg-[#2C3240]'
+                      ? 'bg-[#2E283D] text-[#D8D0EC] hover:bg-[#3A324D]'
                       : 'bg-[#e2eaeb] text-[#1F2118] hover:bg-[#d2dee0]'
                   }`}
                   style={{ fontSize: '19px' }}
@@ -514,10 +541,10 @@ export default function UniversalAssistantPage() {
                   className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold transition cursor-pointer ${
                     mode === 'document'
                       ? isDark
-                        ? 'bg-[#7EC4CF] text-black font-black'
+                        ? 'bg-purple-300 text-[#18151F] font-black'
                         : 'bg-[#54626f] text-white'
                       : isDark
-                      ? 'bg-[#222732] text-[#D1D5DB] hover:bg-[#2C3240]'
+                      ? 'bg-[#2E283D] text-[#D8D0EC] hover:bg-[#3A324D]'
                       : 'bg-[#e2eaeb] text-[#1F2118] hover:bg-[#d2dee0]'
                   }`}
                   style={{ fontSize: '19px' }}
@@ -532,7 +559,7 @@ export default function UniversalAssistantPage() {
                   <label
                     htmlFor="assistant-doc-select"
                     className={`font-bold shrink-0 ${
-                      isDark ? 'text-[#D1D5DB]' : 'text-[#54626f]'
+                      isDark ? 'text-[#D8D0EC]' : 'text-[#54626f]'
                     }`}
                     style={{ fontSize: '18px' }}
                   >
@@ -544,7 +571,7 @@ export default function UniversalAssistantPage() {
                     onChange={(e) => setSelectedDocId(e.target.value)}
                     className={`w-full rounded-xl border px-3.5 py-2 font-semibold outline-none ${
                       isDark
-                        ? 'bg-[#12141A] border-[#2E3542] text-[#F3F4F6]'
+                        ? 'bg-[#1B1723] border-purple-400/25 text-[#F3F0FA]'
                         : 'bg-[#f8fafb] border-[#54626f]/25 text-[#1F2118]'
                     }`}
                     style={{ fontSize: '18px' }}
@@ -566,11 +593,15 @@ export default function UniversalAssistantPage() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-dashed border-[#54626f]/20">
+            <div
+              className={`grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-dashed ${
+                isDark ? 'border-purple-400/20' : 'border-[#54626f]/20'
+              }`}
+            >
               <div>
                 <label
                   className={`block font-extrabold uppercase tracking-wider mb-1 ${
-                    isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                    isDark ? 'text-purple-300/80' : 'text-[#54626f]'
                   }`}
                   style={{ fontSize: '14px' }}
                 >
@@ -583,7 +614,7 @@ export default function UniversalAssistantPage() {
                   }
                   className={`w-full rounded-xl border px-3 py-2 font-bold outline-none ${
                     isDark
-                      ? 'bg-[#12141A] border-[#2E3542] text-[#F3F4F6]'
+                      ? 'bg-[#1B1723] border-purple-400/25 text-[#F3F0FA]'
                       : 'bg-[#f8fafb] border-[#54626f]/25 text-[#1F2118]'
                   }`}
                   style={{ fontSize: '18px' }}
@@ -597,7 +628,7 @@ export default function UniversalAssistantPage() {
               <div>
                 <label
                   className={`block font-extrabold uppercase tracking-wider mb-1 ${
-                    isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                    isDark ? 'text-purple-300/80' : 'text-[#54626f]'
                   }`}
                   style={{ fontSize: '14px' }}
                 >
@@ -610,7 +641,7 @@ export default function UniversalAssistantPage() {
                   }
                   className={`w-full rounded-xl border px-3 py-2 font-bold outline-none ${
                     isDark
-                      ? 'bg-[#12141A] border-[#2E3542] text-[#F3F4F6]'
+                      ? 'bg-[#1B1723] border-purple-400/25 text-[#F3F0FA]'
                       : 'bg-[#f8fafb] border-[#54626f]/25 text-[#1F2118]'
                   }`}
                   style={{ fontSize: '18px' }}
@@ -624,7 +655,7 @@ export default function UniversalAssistantPage() {
               <div>
                 <label
                   className={`block font-extrabold uppercase tracking-wider mb-1 ${
-                    isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                    isDark ? 'text-purple-300/80' : 'text-[#54626f]'
                   }`}
                   style={{ fontSize: '14px' }}
                 >
@@ -637,7 +668,7 @@ export default function UniversalAssistantPage() {
                   }
                   className={`w-full rounded-xl border px-3 py-2 font-bold outline-none ${
                     isDark
-                      ? 'bg-[#12141A] border-[#2E3542] text-[#F3F4F6]'
+                      ? 'bg-[#1B1723] border-purple-400/25 text-[#F3F0FA]'
                       : 'bg-[#f8fafb] border-[#54626f]/25 text-[#1F2118]'
                   }`}
                   style={{ fontSize: '18px' }}
@@ -655,14 +686,14 @@ export default function UniversalAssistantPage() {
             <div
               className={`lg:col-span-4 border rounded-3xl p-5 shadow-sm space-y-4 h-fit ${
                 isDark
-                  ? 'bg-[#171A21] border-[#2C313C]'
+                  ? 'bg-[#231F2C] border-purple-400/20'
                   : 'bg-white/95 border-[#54626f]/20'
               }`}
             >
               <div className="flex items-center gap-2">
                 <MessageSquare
                   className={`w-5 h-5 ${
-                    isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                    isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                   }`}
                 />
                 <h2 className="font-black" style={{ fontSize: '24px' }}>
@@ -672,7 +703,7 @@ export default function UniversalAssistantPage() {
 
               {conversations.length === 0 ? (
                 <p
-                  className={`${isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'}`}
+                  className={`${isDark ? 'text-[#B5ACC9]' : 'text-[#54626f]'}`}
                   style={{ fontSize: '19px' }}
                 >
                   No saved conversations yet.
@@ -690,10 +721,10 @@ export default function UniversalAssistantPage() {
                         className={`rounded-2xl border p-4 transition cursor-pointer ${
                           isSelected
                             ? isDark
-                              ? 'bg-[#22313A] border-[#7EC4CF]/50'
+                              ? 'bg-[#342C47] border-purple-300/50'
                               : 'bg-[#e2eaeb] border-[#54626f]/40'
                             : isDark
-                            ? 'bg-[#12141A] border-[#2E3542] hover:bg-[#1D212B]'
+                            ? 'bg-[#1B1723] border-purple-400/15 hover:bg-[#2A2438]'
                             : 'bg-[#f8fafb] border-[#54626f]/15 hover:bg-[#eef3f4]'
                         }`}
                       >
@@ -708,7 +739,7 @@ export default function UniversalAssistantPage() {
                               onChange={(e) => setEditingTitle(e.target.value)}
                               className={`flex-1 rounded-lg border px-2.5 py-1 font-bold outline-none ${
                                 isDark
-                                  ? 'bg-[#171A21] border-[#3E4556] text-white'
+                                  ? 'bg-[#231F2C] border-purple-300/40 text-white'
                                   : 'bg-white border-[#54626f]/30 text-[#1F2118]'
                               }`}
                               style={{ fontSize: '18px' }}
@@ -717,7 +748,7 @@ export default function UniversalAssistantPage() {
                               type="button"
                               onClick={(e) => handleSaveRename(chat.id, e)}
                               aria-label="Save title"
-                              className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-500 cursor-pointer"
+                              className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 cursor-pointer"
                             >
                               <Check className="w-4 h-4" />
                             </button>
@@ -728,7 +759,7 @@ export default function UniversalAssistantPage() {
                                 setEditingChatId('');
                               }}
                               aria-label="Cancel rename"
-                              className="p-1.5 rounded-lg bg-rose-500/20 text-rose-500 cursor-pointer"
+                              className="p-1.5 rounded-lg bg-rose-500/20 text-rose-400 cursor-pointer"
                             >
                               <X className="w-4 h-4" />
                             </button>
@@ -746,10 +777,10 @@ export default function UniversalAssistantPage() {
                                 className={`inline-block mt-1.5 font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
                                   chat.mode === 'document'
                                     ? isDark
-                                      ? 'bg-[#2A2F3B] text-[#7EC4CF]'
+                                      ? 'bg-purple-400/20 text-purple-300'
                                       : 'bg-[#54626f]/15 text-[#1f3b4d]'
                                     : isDark
-                                    ? 'bg-[#222732] text-[#D1D5DB]'
+                                    ? 'bg-[#2E283D] text-[#D8D0EC]'
                                     : 'bg-white text-[#54626f]'
                                 }`}
                                 style={{ fontSize: '13px' }}
@@ -767,7 +798,7 @@ export default function UniversalAssistantPage() {
                                 aria-label="Rename conversation"
                                 className={`p-1.5 rounded-lg transition cursor-pointer ${
                                   isDark
-                                    ? 'text-[#9CA3AF] hover:bg-[#222732] hover:text-white'
+                                    ? 'text-[#B5ACC9] hover:bg-[#2E283D] hover:text-white'
                                     : 'text-[#54626f] hover:bg-white'
                                 }`}
                               >
@@ -779,7 +810,7 @@ export default function UniversalAssistantPage() {
                                   handleDeleteConversation(chat.id, e)
                                 }
                                 aria-label="Delete conversation"
-                                className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/15 transition cursor-pointer"
+                                className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/15 transition cursor-pointer"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -797,7 +828,7 @@ export default function UniversalAssistantPage() {
             <div
               className={`lg:col-span-8 border rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col justify-between min-h-[560px] ${
                 isDark
-                  ? 'bg-[#171A21] border-[#2C313C]'
+                  ? 'bg-[#231F2C] border-purple-400/20'
                   : 'bg-white/95 border-[#54626f]/20'
               }`}
             >
@@ -806,7 +837,7 @@ export default function UniversalAssistantPage() {
                   <div className="py-12 text-center space-y-2">
                     <Sparkles
                       className={`w-10 h-10 mx-auto ${
-                        isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                        isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                       }`}
                     />
                     <h3 className="font-black" style={{ fontSize: '26px' }}>
@@ -816,7 +847,7 @@ export default function UniversalAssistantPage() {
                     </h3>
                     <p
                       className={`max-w-xl mx-auto ${
-                        isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                        isDark ? 'text-[#B5ACC9]' : 'text-[#54626f]'
                       }`}
                       style={{ fontSize: '20px' }}
                     >
@@ -837,10 +868,10 @@ export default function UniversalAssistantPage() {
                           className={`max-w-[92%] rounded-2xl px-5 py-4 border ${
                             isUser
                               ? isDark
-                                ? 'bg-[#22313A] border-[#7EC4CF]/40 text-[#F3F4F6] font-semibold'
+                                ? 'bg-[#342C47] border-purple-300/40 text-[#F3F0FA] font-semibold'
                                 : 'bg-[#54626f] border-[#54626f] text-white font-semibold'
                               : isDark
-                              ? 'bg-[#12141A] border-[#2E3542] text-[#E5E7EB]'
+                              ? 'bg-[#1B1723] border-purple-400/15 text-[#EAE5F5]'
                               : 'bg-[#f8fafb] border-[#54626f]/15 text-[#1F2118]'
                           }`}
                           style={{ fontSize: '21px' }}
@@ -874,7 +905,7 @@ export default function UniversalAssistantPage() {
                               }
                               className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold transition cursor-pointer disabled:opacity-50 ${
                                 isDark
-                                  ? 'bg-[#222732] text-[#D1D5DB] hover:bg-[#2C3240]'
+                                  ? 'bg-[#2E283D] text-[#EDE8F8] hover:bg-[#3A324D]'
                                   : 'bg-[#e2eaeb] text-[#1F2118] hover:bg-[#d2dee0]'
                               }`}
                               style={{ fontSize: '17px' }}
@@ -894,7 +925,7 @@ export default function UniversalAssistantPage() {
                               }
                               className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold transition cursor-pointer disabled:opacity-50 ${
                                 isDark
-                                  ? 'bg-[#222732] text-[#D1D5DB] hover:bg-[#2C3240]'
+                                  ? 'bg-[#2E283D] text-[#EDE8F8] hover:bg-[#3A324D]'
                                   : 'bg-[#e2eaeb] text-[#1F2118] hover:bg-[#d2dee0]'
                               }`}
                               style={{ fontSize: '17px' }}
@@ -914,7 +945,7 @@ export default function UniversalAssistantPage() {
                               }
                               className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold transition cursor-pointer disabled:opacity-50 ${
                                 isDark
-                                  ? 'bg-[#222732] text-[#D1D5DB] hover:bg-[#2C3240]'
+                                  ? 'bg-[#2E283D] text-[#EDE8F8] hover:bg-[#3A324D]'
                                   : 'bg-[#e2eaeb] text-[#1F2118] hover:bg-[#d2dee0]'
                               }`}
                               style={{ fontSize: '17px' }}
@@ -934,7 +965,7 @@ export default function UniversalAssistantPage() {
                               }
                               className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold transition cursor-pointer disabled:opacity-50 ${
                                 isDark
-                                  ? 'bg-[#222732] text-[#D1D5DB] hover:bg-[#2C3240]'
+                                  ? 'bg-[#2E283D] text-[#EDE8F8] hover:bg-[#3A324D]'
                                   : 'bg-[#e2eaeb] text-[#1F2118] hover:bg-[#d2dee0]'
                               }`}
                               style={{ fontSize: '17px' }}
@@ -952,7 +983,7 @@ export default function UniversalAssistantPage() {
                 {sending && (
                   <div
                     className={`font-bold ${
-                      isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                      isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                     }`}
                     style={{ fontSize: '20px' }}
                   >
@@ -964,10 +995,14 @@ export default function UniversalAssistantPage() {
               </div>
 
               {/* Error & Input Box */}
-              <div className="pt-4 mt-4 border-t border-[#54626f]/20 space-y-3">
+              <div
+                className={`pt-4 mt-4 border-t space-y-3 ${
+                  isDark ? 'border-purple-400/20' : 'border-[#54626f]/20'
+                }`}
+              >
                 {errorMsg && (
                   <p
-                    className="font-bold text-rose-500"
+                    className="font-bold text-rose-400"
                     style={{ fontSize: '18px' }}
                   >
                     {sanitizeDisplayText(errorMsg)}
@@ -986,7 +1021,7 @@ export default function UniversalAssistantPage() {
                     aria-label="Type your message"
                     className={`flex-1 min-w-0 rounded-2xl border px-4 py-3.5 font-medium outline-none transition ${
                       isDark
-                        ? 'bg-[#12141A] border-[#2E3542] text-[#F3F4F6] focus:border-[#7EC4CF]'
+                        ? 'bg-[#1B1723] border-purple-400/25 text-[#F3F0FA] focus:border-purple-300'
                         : 'bg-[#f8fafb] border-[#54626f]/25 text-[#1F2118] focus:border-[#54626f]'
                     }`}
                     style={{ fontSize: '21px' }}
@@ -997,7 +1032,7 @@ export default function UniversalAssistantPage() {
                     disabled={sending}
                     className={`inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl font-bold transition cursor-pointer shrink-0 disabled:opacity-50 ${
                       isDark
-                        ? 'bg-[#7EC4CF] text-black hover:bg-[#93D1DA]'
+                        ? 'bg-purple-300 text-[#18151F] hover:bg-purple-200 font-black'
                         : 'bg-[#54626f] text-white hover:bg-[#1F2118]'
                     }`}
                     style={{ fontSize: '20px' }}

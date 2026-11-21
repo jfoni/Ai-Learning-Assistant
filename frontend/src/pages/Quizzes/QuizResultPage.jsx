@@ -8,6 +8,7 @@ import AppSidebar from '../../components/AppSidebar';
 import QuizResultTrendGraph from '../../components/QuizResultTrendGraph';
 import {
   Menu,
+  ArrowLeft,
   Award,
   RotateCcw,
   CheckCircle2,
@@ -42,6 +43,14 @@ export default function QuizResultPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeSubmissions, setActiveSubmissions] = useState([]);
   const [filterMode, setFilterMode] = useState('all');
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/overview');
+    }
+  };
 
   const stateData = (() => {
     if (location.state?.questions) return location.state;
@@ -142,7 +151,7 @@ export default function QuizResultPage() {
   return (
     <div
       className={`min-h-screen flex relative ${
-        isDark ? 'bg-[#12141A] text-[#F3F4F6]' : 'bg-[#e2eaeb] text-[#1F2118]'
+        isDark ? 'bg-[#18151F] text-[#F3F0FA]' : 'bg-[#e2eaeb] text-[#1F2118]'
       }`}
       style={{ fontSize: '20px' }}
     >
@@ -154,7 +163,7 @@ export default function QuizResultPage() {
           <div
             className={`border rounded-3xl p-6 sm:p-7 shadow-sm flex flex-wrap items-center justify-between gap-4 ${
               isDark
-                ? 'bg-[#171A21] border-[#2C313C]'
+                ? 'bg-[#231F2C] border-purple-400/20'
                 : 'bg-white/95 border-[#54626f]/20'
             }`}
           >
@@ -165,7 +174,7 @@ export default function QuizResultPage() {
                 aria-label="Toggle sidebar"
                 className={`w-12 h-12 rounded-2xl flex items-center justify-center transition cursor-pointer ${
                   isDark
-                    ? 'bg-[#222732] text-[#E5E7EB] hover:bg-[#2C3240]'
+                    ? 'bg-[#2E283D] text-[#EDE8F8] hover:bg-[#3A324D]'
                     : 'bg-[#e2eaeb] text-[#1F2937] hover:bg-[#54626f] hover:text-white'
                 }`}
               >
@@ -175,7 +184,7 @@ export default function QuizResultPage() {
               <div>
                 <h1
                   className={`font-black tracking-tight ${
-                    isDark ? 'text-[#F3F4F6]' : 'text-[#1F2118]'
+                    isDark ? 'text-[#F3F0FA]' : 'text-[#1F2118]'
                   }`}
                   style={{ fontSize: '34px', lineHeight: 1.2 }}
                 >
@@ -183,7 +192,7 @@ export default function QuizResultPage() {
                 </h1>
                 <p
                   className={`mt-1 ${
-                    isDark ? 'text-[#D1D5DB] font-bold' : 'text-[#54626f] font-semibold'
+                    isDark ? 'text-[#C5BCE0] font-bold' : 'text-[#54626f] font-semibold'
                   }`}
                   style={{ fontSize: '18px' }}
                 >
@@ -192,14 +201,14 @@ export default function QuizResultPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2.5 ml-auto">
               {wrongItems.length > 0 && (
                 <button
                   type="button"
                   onClick={handleRetryWrong}
                   className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl transition cursor-pointer ${
                     isDark
-                      ? 'bg-[#222732] text-[#E5B880] hover:bg-[#2C3240] font-black'
+                      ? 'bg-[#2E283D] text-amber-300 hover:bg-[#3A324D] font-black'
                       : 'bg-[#e2eaeb] text-[#1F2118] hover:bg-[#d2dee0] font-bold'
                   }`}
                   style={{ fontSize: '17px' }}
@@ -214,13 +223,27 @@ export default function QuizResultPage() {
                 onClick={() => navigate('/quizzes')}
                 className={`inline-flex items-center gap-2 px-5 py-3 rounded-2xl transition cursor-pointer ${
                   isDark
-                    ? 'bg-[#7EC4CF] text-[#000000] hover:bg-[#93D1DA] font-black'
+                    ? 'bg-purple-300 text-[#18151F] hover:bg-purple-200 font-black'
                     : 'bg-[#54626f] text-white hover:bg-[#1F2118] font-bold'
                 }`}
                 style={{ fontSize: '18px' }}
               >
                 <RotateCcw className="w-4 h-4" />
                 <span>New Quiz</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleBack}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border font-bold transition cursor-pointer ${
+                  isDark
+                    ? 'bg-[#2E283D] border-purple-400/20 text-[#F3F0FA] hover:bg-[#3A324D]'
+                    : 'bg-[#e2eaeb] border-[#54626f]/20 text-[#1F2118] hover:bg-[#d2dee0]'
+                }`}
+                style={{ fontSize: '18px' }}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back</span>
               </button>
             </div>
           </div>
@@ -230,14 +253,14 @@ export default function QuizResultPage() {
             <div
               className={`border rounded-3xl p-5 shadow-sm flex items-center gap-4 ${
                 isDark
-                  ? 'bg-[#171A21] border-[#2C313C]'
+                  ? 'bg-[#231F2C] border-purple-400/20'
                   : 'bg-white/95 border-[#54626f]/20'
               }`}
             >
               <div
                 className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
                   isDark
-                    ? 'bg-[#22313A] text-[#7EC4CF]'
+                    ? 'bg-[#342C47] text-purple-300'
                     : 'bg-[#e2eaeb] text-[#1f3b4d]'
                 }`}
               >
@@ -246,7 +269,7 @@ export default function QuizResultPage() {
               <div>
                 <p
                   className={`uppercase tracking-wider font-extrabold ${
-                    isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                    isDark ? 'text-purple-300/80' : 'text-[#54626f]'
                   }`}
                   style={{ fontSize: '14px' }}
                 >
@@ -261,19 +284,19 @@ export default function QuizResultPage() {
             <div
               className={`border rounded-3xl p-5 shadow-sm ${
                 isDark
-                  ? 'bg-[#171A21] border-[#2C313C]'
+                  ? 'bg-[#231F2C] border-purple-400/20'
                   : 'bg-white/95 border-[#54626f]/20'
               }`}
             >
               <p
                 className={`uppercase tracking-wider font-extrabold ${
-                  isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                  isDark ? 'text-purple-300/80' : 'text-[#54626f]'
                 }`}
                 style={{ fontSize: '14px' }}
               >
                 Correct Answers
               </p>
-              <p className="font-black text-emerald-500 mt-1" style={{ fontSize: '30px' }}>
+              <p className="font-black text-emerald-400 mt-1" style={{ fontSize: '30px' }}>
                 {Number(correctCount)} / {Number(totalCount)}
               </p>
             </div>
@@ -281,19 +304,19 @@ export default function QuizResultPage() {
             <div
               className={`border rounded-3xl p-5 shadow-sm ${
                 isDark
-                  ? 'bg-[#171A21] border-[#2C313C]'
+                  ? 'bg-[#231F2C] border-purple-400/20'
                   : 'bg-white/95 border-[#54626f]/20'
               }`}
             >
               <p
                 className={`uppercase tracking-wider font-extrabold ${
-                  isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                  isDark ? 'text-purple-300/80' : 'text-[#54626f]'
                 }`}
                 style={{ fontSize: '14px' }}
               >
                 Needs Review
               </p>
-              <p className="font-black text-rose-500 mt-1" style={{ fontSize: '30px' }}>
+              <p className="font-black text-rose-400 mt-1" style={{ fontSize: '30px' }}>
                 {Number(wrongItems.length)} Questions
               </p>
             </div>
@@ -311,14 +334,14 @@ export default function QuizResultPage() {
             <div
               className={`border rounded-3xl p-6 sm:p-7 shadow-sm space-y-5 ${
                 isDark
-                  ? 'bg-[#171A21] border-[#2C313C]'
+                  ? 'bg-[#231F2C] border-purple-400/20'
                   : 'bg-white/95 border-[#54626f]/20'
               }`}
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2
                   className={`font-black ${
-                    isDark ? 'text-[#F3F4F6]' : 'text-[#1F2118]'
+                    isDark ? 'text-[#F3F0FA]' : 'text-[#1F2118]'
                   }`}
                   style={{ fontSize: '26px' }}
                 >
@@ -340,8 +363,8 @@ export default function QuizResultPage() {
                         className={`px-3.5 py-1.5 rounded-full font-bold transition cursor-pointer ${
                           isDark
                             ? active
-                              ? 'bg-[#7EC4CF] text-[#000000] font-black'
-                              : 'bg-[#222732] text-[#D1D5DB] hover:bg-[#2C3240]'
+                              ? 'bg-purple-300 text-[#18151F] font-black'
+                              : 'bg-[#2E283D] text-[#D8D0EC] hover:bg-[#3A324D]'
                             : active
                               ? 'bg-[#54626f] text-white'
                               : 'bg-[#e2eaeb] text-[#54626f] hover:bg-[#d2dee0]'
@@ -361,29 +384,29 @@ export default function QuizResultPage() {
                     key={q.id || idx}
                     className={`rounded-2xl border p-5 space-y-2.5 ${
                       isDark
-                        ? 'bg-[#12141A] border-[#2E3542]'
+                        ? 'bg-[#1B1723] border-purple-400/15'
                         : 'bg-[#f8fafb] border-[#54626f]/15'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <p
                         className={`font-black leading-snug ${
-                          isDark ? 'text-[#F3F4F6]' : 'text-[#1F2118]'
+                          isDark ? 'text-[#F3F0FA]' : 'text-[#1F2118]'
                         }`}
                         style={{ fontSize: '22px' }}
                       >
                         {Number(idx + 1)}. {cleanTopicTitle(q.question)}
                       </p>
                       {isCorrect ? (
-                        <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0 mt-0.5" />
+                        <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
                       ) : (
-                        <XCircle className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
+                        <XCircle className="w-6 h-6 text-rose-400 shrink-0 mt-0.5" />
                       )}
                     </div>
 
                     <p
                       className={`${
-                        isDark ? 'text-[#E5E7EB] font-bold' : 'text-[#1F2118] font-semibold'
+                        isDark ? 'text-[#EAE5F5] font-bold' : 'text-[#1F2118] font-semibold'
                       }`}
                       style={{ fontSize: '19px' }}
                     >
@@ -395,7 +418,7 @@ export default function QuizResultPage() {
 
                     <p
                       className={`font-extrabold ${
-                        isDark ? 'text-[#7EC4CF]' : 'text-[#1f3b4d]'
+                        isDark ? 'text-purple-300' : 'text-[#1f3b4d]'
                       }`}
                       style={{ fontSize: '19px' }}
                     >
@@ -405,12 +428,12 @@ export default function QuizResultPage() {
                     <div
                       className={`pt-2 border-t ${
                         isDark
-                          ? 'border-[#262C38] text-[#D1D5DB] font-semibold'
+                          ? 'border-purple-400/15 text-[#C5BCE0] font-semibold'
                           : 'border-[#54626f]/15 text-[#54626f] font-medium'
                       }`}
                       style={{ fontSize: '18px' }}
                     >
-                      <strong className={isDark ? 'text-[#F3F4F6]' : 'text-[#1F2118]'}>
+                      <strong className={isDark ? 'text-[#F3F0FA]' : 'text-[#1F2118]'}>
                         Why This Is Correct:
                       </strong>{' '}
                       <span>{reason}</span>

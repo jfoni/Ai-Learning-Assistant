@@ -7,6 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import AppSidebar from '../components/AppSidebar';
 import {
   Menu,
+  ArrowLeft,
   AlertTriangle,
   CheckCircle2,
   TrendingUp,
@@ -36,7 +37,7 @@ const badgeStyle = (category, isDark) => {
 const barColor = (category, isDark) => {
   if (category === 'Weak') return 'bg-rose-500';
   if (category === 'Needs Improvement') return 'bg-amber-500';
-  return isDark ? 'bg-[#7EC4CF]' : 'bg-[#2F5D68]';
+  return isDark ? 'bg-purple-300' : 'bg-[#2F5D68]';
 };
 
 export default function KnowledgeGapPage() {
@@ -53,6 +54,14 @@ export default function KnowledgeGapPage() {
     topics: [],
     aiInsights: null,
   });
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/overview');
+    }
+  };
 
   const loadAnalysis = useCallback(async (uid) => {
     if (!uid) {
@@ -102,7 +111,7 @@ export default function KnowledgeGapPage() {
   return (
     <div
       className={`min-h-screen flex relative ${
-        isDark ? 'bg-[#12141A] text-[#F3F4F6]' : 'bg-[#e2eaeb] text-[#1F2118]'
+        isDark ? 'bg-[#18151F] text-[#F3F0FA]' : 'bg-[#e2eaeb] text-[#1F2118]'
       }`}
       style={{ fontSize: '22px' }}
     >
@@ -114,7 +123,7 @@ export default function KnowledgeGapPage() {
           <div
             className={`border rounded-3xl p-6 sm:p-7 shadow-sm flex flex-wrap items-center justify-between gap-4 ${
               isDark
-                ? 'bg-[#171A21] border-[#2C313C]'
+                ? 'bg-[#231F2C] border-purple-400/20'
                 : 'bg-white/95 border-[#54626f]/20'
             }`}
           >
@@ -125,7 +134,7 @@ export default function KnowledgeGapPage() {
                 aria-label="Toggle sidebar"
                 className={`w-12 h-12 rounded-2xl flex items-center justify-center transition cursor-pointer ${
                   isDark
-                    ? 'bg-[#222732] text-[#E5E7EB] hover:bg-[#2C3240]'
+                    ? 'bg-[#2E283D] text-[#EDE8F8] hover:bg-[#3A324D]'
                     : 'bg-[#e2eaeb] text-[#1F2937] hover:bg-[#54626f] hover:text-white'
                 }`}
               >
@@ -141,7 +150,7 @@ export default function KnowledgeGapPage() {
                 </h1>
                 <p
                   className={`mt-1 ${
-                    isDark ? 'text-[#D1D5DB] font-semibold' : 'text-[#54626f] font-medium'
+                    isDark ? 'text-[#C5BCE0] font-semibold' : 'text-[#54626f] font-medium'
                   }`}
                   style={{ fontSize: '20px' }}
                 >
@@ -150,27 +159,43 @@ export default function KnowledgeGapPage() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => loadAnalysis(userId)}
-              disabled={loading || !userId}
-              className={`inline-flex items-center gap-2 px-5 py-3 rounded-2xl font-bold transition cursor-pointer disabled:opacity-50 ${
-                isDark
-                  ? 'bg-[#222732] text-[#7EC4CF] hover:bg-[#2C3240]'
-                  : 'bg-[#e2eaeb] text-[#1F2937] hover:bg-[#d2dee0]'
-              }`}
-              style={{ fontSize: '19px' }}
-            >
-              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-              <span>Refresh Analysis</span>
-            </button>
+            <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+              <button
+                type="button"
+                onClick={() => loadAnalysis(userId)}
+                disabled={loading || !userId}
+                className={`inline-flex items-center gap-2 px-5 py-3 rounded-2xl font-bold transition cursor-pointer disabled:opacity-50 ${
+                  isDark
+                    ? 'bg-[#2E283D] text-purple-300 hover:bg-[#3A324D]'
+                    : 'bg-[#e2eaeb] text-[#1F2937] hover:bg-[#d2dee0]'
+                }`}
+                style={{ fontSize: '19px' }}
+              >
+                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh Analysis</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleBack}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border font-bold transition cursor-pointer ${
+                  isDark
+                    ? 'bg-[#2E283D] border-purple-400/20 text-[#F3F0FA] hover:bg-[#3A324D]'
+                    : 'bg-[#e2eaeb] border-[#54626f]/20 text-[#1F2118] hover:bg-[#d2dee0]'
+                }`}
+                style={{ fontSize: '18px' }}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back</span>
+              </button>
+            </div>
           </div>
 
           {loading ? (
             <div
               className={`border rounded-3xl p-10 text-center font-bold ${
                 isDark
-                  ? 'bg-[#171A21] border-[#2C313C] text-[#D1D5DB]'
+                  ? 'bg-[#231F2C] border-purple-400/20 text-[#C5BCE0]'
                   : 'bg-white/95 border-[#54626f]/20 text-[#54626f]'
               }`}
               style={{ fontSize: '22px' }}
@@ -179,9 +204,9 @@ export default function KnowledgeGapPage() {
             </div>
           ) : errorMsg ? (
             <div
-              className={`border rounded-3xl p-6 font-bold text-rose-500 ${
+              className={`border rounded-3xl p-6 font-bold text-rose-400 ${
                 isDark
-                  ? 'bg-[#171A21] border-rose-500/30'
+                  ? 'bg-[#231F2C] border-rose-500/30'
                   : 'bg-white border-rose-200'
               }`}
               style={{ fontSize: '21px' }}
@@ -192,13 +217,13 @@ export default function KnowledgeGapPage() {
             <div
               className={`border rounded-3xl p-8 sm:p-10 text-center space-y-4 ${
                 isDark
-                  ? 'bg-[#171A21] border-[#2C313C]'
+                  ? 'bg-[#231F2C] border-purple-400/20'
                   : 'bg-white/95 border-[#54626f]/20'
               }`}
             >
               <TrendingUp
                 className={`w-12 h-12 mx-auto ${
-                  isDark ? 'text-[#7EC4CF]' : 'text-[#2F5D68]'
+                  isDark ? 'text-purple-300' : 'text-[#2F5D68]'
                 }`}
               />
               <h2 className="font-black" style={{ fontSize: '28px' }}>
@@ -206,7 +231,7 @@ export default function KnowledgeGapPage() {
               </h2>
               <p
                 className={`max-w-xl mx-auto ${
-                  isDark ? 'text-[#D1D5DB]' : 'text-[#54626f]'
+                  isDark ? 'text-[#C5BCE0]' : 'text-[#54626f]'
                 }`}
                 style={{ fontSize: '20px' }}
               >
@@ -217,7 +242,7 @@ export default function KnowledgeGapPage() {
                 onClick={() => navigate('/quizzes')}
                 className={`inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl font-bold transition cursor-pointer ${
                   isDark
-                    ? 'bg-[#7EC4CF] text-black hover:bg-[#93D1DA]'
+                    ? 'bg-purple-300 text-[#18151F] hover:bg-purple-200'
                     : 'bg-[#54626f] text-white hover:bg-[#1F2118]'
                 }`}
                 style={{ fontSize: '20px' }}
@@ -233,22 +258,22 @@ export default function KnowledgeGapPage() {
                 <div
                   className={`border rounded-3xl p-6 ${
                     isDark
-                      ? 'bg-[#171A21] border-[#2C313C]'
+                      ? 'bg-[#231F2C] border-purple-400/20'
                       : 'bg-white/95 border-[#54626f]/20'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span
                       className={`font-extrabold uppercase tracking-wider ${
-                        isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                        isDark ? 'text-purple-300/80' : 'text-[#54626f]'
                       }`}
                       style={{ fontSize: '15px' }}
                     >
                       Weak Topics
                     </span>
-                    <AlertTriangle className="w-5 h-5 text-rose-500" />
+                    <AlertTriangle className="w-5 h-5 text-rose-400" />
                   </div>
-                  <p className="font-black text-rose-500 mt-1.5" style={{ fontSize: '38px' }}>
+                  <p className="font-black text-rose-400 mt-1.5" style={{ fontSize: '38px' }}>
                     {weakTopics.length}
                   </p>
                 </div>
@@ -256,22 +281,22 @@ export default function KnowledgeGapPage() {
                 <div
                   className={`border rounded-3xl p-6 ${
                     isDark
-                      ? 'bg-[#171A21] border-[#2C313C]'
+                      ? 'bg-[#231F2C] border-purple-400/20'
                       : 'bg-white/95 border-[#54626f]/20'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span
                       className={`font-extrabold uppercase tracking-wider ${
-                        isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                        isDark ? 'text-purple-300/80' : 'text-[#54626f]'
                       }`}
                       style={{ fontSize: '15px' }}
                     >
                       Needs Improvement
                     </span>
-                    <BookOpen className="w-5 h-5 text-amber-500" />
+                    <BookOpen className="w-5 h-5 text-amber-400" />
                   </div>
-                  <p className="font-black text-amber-500 mt-1.5" style={{ fontSize: '38px' }}>
+                  <p className="font-black text-amber-400 mt-1.5" style={{ fontSize: '38px' }}>
                     {needsWorkTopics.length}
                   </p>
                 </div>
@@ -279,22 +304,22 @@ export default function KnowledgeGapPage() {
                 <div
                   className={`border rounded-3xl p-6 ${
                     isDark
-                      ? 'bg-[#171A21] border-[#2C313C]'
+                      ? 'bg-[#231F2C] border-purple-400/20'
                       : 'bg-white/95 border-[#54626f]/20'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span
                       className={`font-extrabold uppercase tracking-wider ${
-                        isDark ? 'text-[#9CA3AF]' : 'text-[#54626f]'
+                        isDark ? 'text-purple-300/80' : 'text-[#54626f]'
                       }`}
                       style={{ fontSize: '15px' }}
                     >
                       Strong Topics
                     </span>
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                   </div>
-                  <p className="font-black text-emerald-500 mt-1.5" style={{ fontSize: '38px' }}>
+                  <p className="font-black text-emerald-400 mt-1.5" style={{ fontSize: '38px' }}>
                     {strongTopics.length}
                   </p>
                 </div>
@@ -305,14 +330,14 @@ export default function KnowledgeGapPage() {
                 <div
                   className={`border rounded-3xl p-6 flex items-start gap-4 ${
                     isDark
-                      ? 'bg-[#171A21] border-[#2C313C]'
+                      ? 'bg-[#231F2C] border-purple-400/20'
                       : 'bg-white/95 border-[#54626f]/20'
                   }`}
                 >
                   <div
                     className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 mt-0.5 ${
                       isDark
-                        ? 'bg-[#22313A] text-[#7EC4CF]'
+                        ? 'bg-[#342C47] text-purple-300'
                         : 'bg-[#e2eaeb] text-[#2F5D68]'
                     }`}
                   >
@@ -324,7 +349,7 @@ export default function KnowledgeGapPage() {
                     </h2>
                     <p
                       className={`mt-2 leading-relaxed ${
-                        isDark ? 'text-[#E5E7EB]' : 'text-[#374151]'
+                        isDark ? 'text-[#EAE5F5]' : 'text-[#374151]'
                       }`}
                       style={{ fontSize: '21px' }}
                     >
@@ -338,7 +363,7 @@ export default function KnowledgeGapPage() {
               <div
                 className={`border rounded-3xl p-6 sm:p-7 space-y-6 ${
                   isDark
-                    ? 'bg-[#171A21] border-[#2C313C]'
+                    ? 'bg-[#231F2C] border-purple-400/20'
                     : 'bg-white/95 border-[#54626f]/20'
                 }`}
               >
@@ -379,7 +404,7 @@ export default function KnowledgeGapPage() {
                         key={t.topic}
                         className={`rounded-2xl border p-6 space-y-4 ${
                           isDark
-                            ? 'bg-[#12141A] border-[#2E3542]'
+                            ? 'bg-[#1B1723] border-purple-400/15'
                             : 'bg-[#f8fafb] border-[#54626f]/15'
                         }`}
                       >
@@ -420,7 +445,7 @@ export default function KnowledgeGapPage() {
 
                         <div
                           className={`w-full h-3.5 rounded-full overflow-hidden ${
-                            isDark ? 'bg-[#222732]' : 'bg-[#e2eaeb]'
+                            isDark ? 'bg-[#2E283D]' : 'bg-[#e2eaeb]'
                           }`}
                         >
                           <div
@@ -436,7 +461,7 @@ export default function KnowledgeGapPage() {
                           <ul
                             className={`space-y-3 pt-3 border-t list-disc pl-7 m-0 ${
                               isDark
-                                ? 'border-[#262C38] text-[#E5E7EB] marker:text-[#7EC4CF]'
+                                ? 'border-purple-400/15 text-[#EAE5F5] marker:text-purple-300'
                                 : 'border-[#54626f]/15 text-[#374151] marker:text-[#2F5D68]'
                             }`}
                             style={{ fontSize: '21px' }}
@@ -464,7 +489,7 @@ export default function KnowledgeGapPage() {
                               <span
                                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold ${
                                   isDark
-                                    ? 'bg-[#222732] text-[#7EC4CF]'
+                                    ? 'bg-[#2E283D] text-purple-300'
                                     : 'bg-[#e2eaeb] text-[#1f3b4d]'
                                 }`}
                               >
@@ -474,7 +499,7 @@ export default function KnowledgeGapPage() {
                             ) : (
                               <span
                                 className={`font-semibold ${
-                                  isDark ? 'text-[#9CA3AF]' : 'text-[#6B7280]'
+                                  isDark ? 'text-[#B5ACC9]' : 'text-[#6B7280]'
                                 }`}
                               >
                                 Attempts: {t.attempts}
@@ -488,7 +513,7 @@ export default function KnowledgeGapPage() {
                               onClick={() => navigate('/flashcards')}
                               className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold transition cursor-pointer ${
                                 isDark
-                                  ? 'bg-[#222732] text-[#E5E7EB] hover:bg-[#2C3240]'
+                                  ? 'bg-[#2E283D] text-[#EDE8F8] hover:bg-[#3A324D]'
                                   : 'bg-[#e2eaeb] text-[#1F2118] hover:bg-[#d2dee0]'
                               }`}
                               style={{ fontSize: '18px' }}
@@ -502,7 +527,7 @@ export default function KnowledgeGapPage() {
                               onClick={() => handlePracticeTopic(t.topic)}
                               className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-extrabold transition cursor-pointer ${
                                 isDark
-                                  ? 'bg-[#7EC4CF] text-black hover:bg-[#93D1DA]'
+                                  ? 'bg-purple-300 text-[#18151F] hover:bg-purple-200'
                                   : 'bg-[#54626f] text-white hover:bg-[#1F2118]'
                               }`}
                               style={{ fontSize: '18px' }}

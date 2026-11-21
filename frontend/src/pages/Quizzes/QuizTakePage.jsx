@@ -34,7 +34,8 @@ const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
 
 const cleanDollars = (text) =>
   String(text || '')
-    .replace(/\$\$([\s\S]*?)\$\$/g, '$1') .replace(/\$([^$\n]+?)\$/g, '$1')
+    .replace(/\$\$([\s\S]*?)\$\$/g, '$1')
+    .replace(/\$([^$\n]+?)\$/g, '$1')
     .replace(/\$/g, '')
     .trim();
 
@@ -123,6 +124,14 @@ export default function QuizTakePage() {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [quizStarted, setQuizStarted] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/overview');
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -381,7 +390,7 @@ export default function QuizTakePage() {
   return (
     <div
       className={`min-h-screen flex relative ${
-        isDark ? 'bg-[#12141A] text-[#F3F4F6]' : 'bg-[#e2eaeb] text-[#1F2118]'
+        isDark ? 'bg-[#18151F] text-[#F3F0FA]' : 'bg-[#e2eaeb] text-[#1F2118]'
       }`}
       style={{ fontSize: '20px' }}
     >
@@ -393,7 +402,7 @@ export default function QuizTakePage() {
           <div
             className={`border rounded-3xl p-6 sm:p-7 shadow-sm flex flex-wrap items-center justify-between gap-4 ${
               isDark
-                ? 'bg-[#171A21] border-[#2C313C]'
+                ? 'bg-[#231F2C] border-purple-400/20'
                 : 'bg-white/95 border-[#54626f]/20'
             }`}
           >
@@ -404,7 +413,7 @@ export default function QuizTakePage() {
                 aria-label="Toggle sidebar"
                 className={`w-12 h-12 rounded-2xl flex items-center justify-center transition cursor-pointer ${
                   isDark
-                    ? 'bg-[#222732] text-[#E5E7EB] hover:bg-[#2C3240]'
+                    ? 'bg-[#2E283D] text-[#EDE8F8] hover:bg-[#3A324D]'
                     : 'bg-[#e2eaeb] text-[#1F2937] hover:bg-[#54626f] hover:text-white'
                 }`}
               >
@@ -414,7 +423,7 @@ export default function QuizTakePage() {
               <div>
                 <h1
                   className={`font-black tracking-tight ${
-                    isDark ? 'text-[#F3F4F6]' : 'text-[#1F2118]'
+                    isDark ? 'text-[#F3F0FA]' : 'text-[#1F2118]'
                   }`}
                   style={{ fontSize: '34px', lineHeight: 1.2 }}
                 >
@@ -422,7 +431,7 @@ export default function QuizTakePage() {
                 </h1>
                 <p
                   className={`mt-1 ${
-                    isDark ? 'text-[#D1D5DB] font-bold' : 'text-[#54626f] font-semibold'
+                    isDark ? 'text-[#C5BCE0] font-bold' : 'text-[#54626f] font-semibold'
                   }`}
                   style={{ fontSize: '18px' }}
                 >
@@ -431,35 +440,51 @@ export default function QuizTakePage() {
               </div>
             </div>
 
-            {quizStarted ? (
-              <div className="flex items-center gap-2.5">
-                <span
-                  className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl font-black ${
-                    isDark
-                      ? 'bg-[#222732] text-[#7EC4CF]'
-                      : 'bg-[#e2eaeb] text-[#1f3b4d]'
-                  }`}
-                  style={{ fontSize: '17px' }}
-                >
-                  <Clock className="w-4 h-4" />
-                  <span>{formatSeconds(elapsedSeconds)}</span>
-                </span>
+            <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+              {quizStarted && (
+                <>
+                  <span
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl font-black ${
+                      isDark
+                        ? 'bg-[#342C47] text-purple-300'
+                        : 'bg-[#e2eaeb] text-[#1f3b4d]'
+                    }`}
+                    style={{ fontSize: '17px' }}
+                  >
+                    <Clock className="w-4 h-4" />
+                    <span>{formatSeconds(elapsedSeconds)}</span>
+                  </span>
 
-                <button
-                  type="button"
-                  onClick={() => setQuizStarted(false)}
-                  className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold transition cursor-pointer ${
-                    isDark
-                      ? 'bg-[#222732] text-[#F3F4F6] hover:bg-[#2C3240]'
-                      : 'bg-[#e2eaeb] text-[#54626f] hover:bg-[#d2dee0]'
-                  }`}
-                  style={{ fontSize: '17px' }}
-                >
-                  <SlidersHorizontal className="w-4 h-4" />
-                  <span>Setup</span>
-                </button>
-              </div>
-            ) : null}
+                  <button
+                    type="button"
+                    onClick={() => setQuizStarted(false)}
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold transition cursor-pointer ${
+                      isDark
+                        ? 'bg-[#2E283D] text-[#F3F0FA] hover:bg-[#3A324D]'
+                        : 'bg-[#e2eaeb] text-[#54626f] hover:bg-[#d2dee0]'
+                    }`}
+                    style={{ fontSize: '17px' }}
+                  >
+                    <SlidersHorizontal className="w-4 h-4" />
+                    <span>Setup</span>
+                  </button>
+                </>
+              )}
+
+              <button
+                type="button"
+                onClick={handleBack}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border font-bold transition cursor-pointer ${
+                  isDark
+                    ? 'bg-[#2E283D] border-purple-400/20 text-[#F3F0FA] hover:bg-[#3A324D]'
+                    : 'bg-[#e2eaeb] border-[#54626f]/20 text-[#1F2118] hover:bg-[#d2dee0]'
+                }`}
+                style={{ fontSize: '18px' }}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back</span>
+              </button>
+            </div>
           </div>
 
           {!quizStarted ? (
@@ -467,7 +492,7 @@ export default function QuizTakePage() {
               onSubmit={handleStartQuiz}
               className={`border rounded-3xl p-6 sm:p-8 shadow-sm space-y-7 ${
                 isDark
-                  ? 'bg-[#171A21] border-[#2C313C]'
+                  ? 'bg-[#231F2C] border-purple-400/20'
                   : 'bg-white/95 border-[#54626f]/20'
               }`}
             >
@@ -475,7 +500,7 @@ export default function QuizTakePage() {
               <div>
                 <label
                   className={`block uppercase tracking-wider mb-2.5 ${
-                    isDark ? 'text-[#E5E7EB] font-black' : 'text-[#54626f] font-extrabold'
+                    isDark ? 'text-purple-300/85 font-black' : 'text-[#54626f] font-extrabold'
                   }`}
                   style={{ fontSize: '15px' }}
                 >
@@ -486,10 +511,10 @@ export default function QuizTakePage() {
                   placeholder="e.g., Informed Search, Binary Tree Traversal, SQL Joins..."
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  className={`w-full px-5 py-4 rounded-2xl border focus:outline-none focus:border-[#54626f] ${
+                  className={`w-full px-5 py-4 rounded-2xl border focus:outline-none ${
                     isDark
-                      ? 'bg-[#12141A] border-[#2E3542] text-[#F3F4F6] placeholder-[#9CA3AF] font-bold'
-                      : 'bg-[#f8fafb] border-[#54626f]/25 text-[#1F2118]'
+                      ? 'bg-[#1B1723] border-purple-400/25 text-[#F3F0FA] placeholder-[#9B92AE] focus:border-purple-300 font-bold'
+                      : 'bg-[#f8fafb] border-[#54626f]/25 text-[#1F2118] focus:border-[#54626f]'
                   }`}
                   style={{ fontSize: '20px' }}
                 />
@@ -500,7 +525,7 @@ export default function QuizTakePage() {
                 <div>
                   <label
                     className={`flex items-center gap-2 uppercase tracking-wider mb-2.5 ${
-                      isDark ? 'text-[#E5E7EB] font-black' : 'text-[#54626f] font-extrabold'
+                      isDark ? 'text-purple-300/85 font-black' : 'text-[#54626f] font-extrabold'
                     }`}
                     style={{ fontSize: '15px' }}
                   >
@@ -510,10 +535,10 @@ export default function QuizTakePage() {
                   <select
                     value={selectedDocId}
                     onChange={(e) => setSelectedDocId(e.target.value)}
-                    className={`w-full px-4 py-3.5 rounded-2xl border focus:outline-none focus:border-[#54626f] ${
+                    className={`w-full px-4 py-3.5 rounded-2xl border focus:outline-none ${
                       isDark
-                        ? 'bg-[#12141A] border-[#2E3542] text-[#F3F4F6] font-bold'
-                        : 'bg-[#f8fafb] border-[#54626f]/25 text-[#1F2118] font-semibold'
+                        ? 'bg-[#1B1723] border-purple-400/25 text-[#F3F0FA] focus:border-purple-300 font-bold'
+                        : 'bg-[#f8fafb] border-[#54626f]/25 text-[#1F2118] focus:border-[#54626f] font-semibold'
                     }`}
                     style={{ fontSize: '18px' }}
                   >
@@ -529,7 +554,7 @@ export default function QuizTakePage() {
                 <div>
                   <label
                     className={`flex items-center gap-2 uppercase tracking-wider mb-2.5 ${
-                      isDark ? 'text-[#E5E7EB] font-black' : 'text-[#54626f] font-extrabold'
+                      isDark ? 'text-purple-300/85 font-black' : 'text-[#54626f] font-extrabold'
                     }`}
                     style={{ fontSize: '15px' }}
                   >
@@ -542,7 +567,7 @@ export default function QuizTakePage() {
                     onChange={handleFileChange}
                     className={`w-full px-4 py-3 rounded-2xl border cursor-pointer ${
                       isDark
-                        ? 'bg-[#12141A] border-[#2E3542] text-[#E5E7EB] font-bold'
+                        ? 'bg-[#1B1723] border-purple-400/25 text-[#EAE5F5] font-bold'
                         : 'bg-[#f8fafb] border-[#54626f]/25 text-[#1F2118] font-semibold'
                     }`}
                     style={{ fontSize: '17px' }}
@@ -550,7 +575,7 @@ export default function QuizTakePage() {
                   {uploadedFile && (
                     <p
                       className={`mt-1.5 text-base font-bold truncate ${
-                        isDark ? 'text-[#7EC4CF]' : 'text-[#1f3b4d]'
+                        isDark ? 'text-purple-300' : 'text-[#1f3b4d]'
                       }`}
                     >
                       Selected: {uploadedFile.name}
@@ -564,7 +589,7 @@ export default function QuizTakePage() {
                 <div>
                   <label
                     className={`block uppercase tracking-wider mb-2.5 ${
-                      isDark ? 'text-[#E5E7EB] font-black' : 'text-[#54626f] font-extrabold'
+                      isDark ? 'text-purple-300/85 font-black' : 'text-[#54626f] font-extrabold'
                     }`}
                     style={{ fontSize: '15px' }}
                   >
@@ -573,10 +598,10 @@ export default function QuizTakePage() {
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className={`w-full px-4 py-3.5 rounded-2xl border focus:outline-none focus:border-[#54626f] ${
+                    className={`w-full px-4 py-3.5 rounded-2xl border focus:outline-none ${
                       isDark
-                        ? 'bg-[#12141A] border-[#2E3542] text-[#F3F4F6] font-bold'
-                        : 'bg-[#f8fafb] border-[#54626f]/25 text-[#1F2118] font-semibold'
+                        ? 'bg-[#1B1723] border-purple-400/25 text-[#F3F0FA] focus:border-purple-300 font-bold'
+                        : 'bg-[#f8fafb] border-[#54626f]/25 text-[#1F2118] focus:border-[#54626f] font-semibold'
                     }`}
                     style={{ fontSize: '18px' }}
                   >
@@ -592,7 +617,7 @@ export default function QuizTakePage() {
                   <div className="flex items-center justify-between mb-2.5">
                     <label
                       className={`uppercase tracking-wider ${
-                        isDark ? 'text-[#E5E7EB] font-black' : 'text-[#54626f] font-extrabold'
+                        isDark ? 'text-purple-300/85 font-black' : 'text-[#54626f] font-extrabold'
                       }`}
                       style={{ fontSize: '15px' }}
                     >
@@ -601,7 +626,7 @@ export default function QuizTakePage() {
                     <span
                       className={`px-3 py-1 rounded-full font-black ${
                         isDark
-                          ? 'bg-[#22313A] text-[#7EC4CF]'
+                          ? 'bg-[#342C47] text-purple-300'
                           : 'bg-[#e2eaeb] text-[#1f3b4d]'
                       }`}
                       style={{ fontSize: '15px' }}
@@ -617,7 +642,9 @@ export default function QuizTakePage() {
                       max={20}
                       value={questionCount}
                       onChange={(e) => setQuestionCount(Number(e.target.value))}
-                      className="flex-1 accent-[#54626f] cursor-pointer h-2.5"
+                      className={`flex-1 cursor-pointer h-2.5 ${
+                        isDark ? 'accent-purple-300' : 'accent-[#54626f]'
+                      }`}
                     />
                     <input
                       type="number"
@@ -630,7 +657,7 @@ export default function QuizTakePage() {
                       }}
                       className={`w-20 px-3 py-2.5 rounded-2xl border font-black text-center ${
                         isDark
-                          ? 'bg-[#12141A] border-[#2E3542] text-[#F3F4F6]'
+                          ? 'bg-[#1B1723] border-purple-400/25 text-[#F3F0FA]'
                           : 'bg-[#f8fafb] border-[#54626f]/25 text-[#1F2118]'
                       }`}
                       style={{ fontSize: '19px' }}
@@ -643,7 +670,7 @@ export default function QuizTakePage() {
               <div>
                 <label
                   className={`block uppercase tracking-wider mb-2.5 ${
-                    isDark ? 'text-[#E5E7EB] font-black' : 'text-[#54626f] font-extrabold'
+                    isDark ? 'text-purple-300/85 font-black' : 'text-[#54626f] font-extrabold'
                   }`}
                   style={{ fontSize: '15px' }}
                 >
@@ -660,8 +687,8 @@ export default function QuizTakePage() {
                         className={`px-6 py-3 rounded-2xl border transition cursor-pointer ${
                           isDark
                             ? active
-                              ? 'bg-[#22313A] border-[#7EC4CF] text-[#E6F4F7] font-black'
-                              : 'bg-[#12141A] border-[#2E3542] text-[#D1D5DB] hover:bg-[#222732] font-bold'
+                              ? 'bg-[#342C47] border-purple-300 text-[#F3F0FA] font-black'
+                              : 'bg-[#1B1723] border-purple-400/20 text-[#D8D0EC] hover:bg-[#2E283D] font-bold'
                             : active
                               ? 'bg-[#54626f] border-[#54626f] text-white font-bold'
                               : 'bg-[#f8fafb] border-[#54626f]/20 text-[#1F2118] hover:bg-[#e2eaeb]/70 font-semibold'
@@ -676,7 +703,7 @@ export default function QuizTakePage() {
               </div>
 
               {errorMsg && (
-                <p className="text-red-500 font-bold" style={{ fontSize: '18px' }}>
+                <p className="text-rose-400 font-bold" style={{ fontSize: '18px' }}>
                   {errorMsg}
                 </p>
               )}
@@ -686,7 +713,7 @@ export default function QuizTakePage() {
                 disabled={generating}
                 className={`w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl transition shadow-sm disabled:opacity-50 cursor-pointer ${
                   isDark
-                    ? 'bg-[#7EC4CF] text-[#000000] hover:bg-[#93D1DA] font-black'
+                    ? 'bg-purple-300 text-[#18151F] hover:bg-purple-200 font-black'
                     : 'bg-[#54626f] text-white hover:bg-[#1F2118] font-bold'
                 }`}
                 style={{ fontSize: '20px' }}
@@ -699,17 +726,21 @@ export default function QuizTakePage() {
             <div
               className={`border rounded-3xl p-6 sm:p-8 shadow-sm space-y-6 ${
                 isDark
-                  ? 'bg-[#171A21] border-[#2C313C]'
+                  ? 'bg-[#231F2C] border-purple-400/20'
                   : 'bg-white/95 border-[#54626f]/20'
               }`}
             >
               {/* Meta bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#54626f]/15">
+              <div
+                className={`flex flex-wrap items-center justify-between gap-3 pb-4 border-b ${
+                  isDark ? 'border-purple-400/15' : 'border-[#54626f]/15'
+                }`}
+              >
                 <div className="flex flex-wrap items-center gap-2.5">
                   <span
                     className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full font-extrabold ${
                       isDark
-                        ? 'bg-[#22313A] text-[#7EC4CF]'
+                        ? 'bg-[#342C47] text-purple-300'
                         : 'bg-[#e2eaeb] text-[#1f3b4d]'
                     }`}
                     style={{ fontSize: '16px' }}
@@ -720,7 +751,7 @@ export default function QuizTakePage() {
                   <span
                     className={`px-4 py-1.5 rounded-full font-extrabold ${
                       isDark
-                        ? 'bg-[#222732] text-[#E5B880]'
+                        ? 'bg-[#2E283D] text-amber-300'
                         : 'bg-[#e2eaeb] text-[#6b4c35]'
                     }`}
                     style={{ fontSize: '16px' }}
@@ -731,7 +762,7 @@ export default function QuizTakePage() {
 
                 <span
                   className={`font-black ${
-                    isDark ? 'text-[#D1D5DB]' : 'text-[#54626f]'
+                    isDark ? 'text-[#C5BCE0]' : 'text-[#54626f]'
                   }`}
                   style={{ fontSize: '18px' }}
                 >
@@ -745,7 +776,7 @@ export default function QuizTakePage() {
                 <div className="space-y-5">
                   <h2
                     className={`font-black leading-snug ${
-                      isDark ? 'text-[#F3F4F6]' : 'text-[#1F2118]'
+                      isDark ? 'text-[#F3F0FA]' : 'text-[#1F2118]'
                     }`}
                     style={{ fontSize: '26px' }}
                   >
@@ -764,8 +795,8 @@ export default function QuizTakePage() {
                             className={`w-full text-left px-5 py-4 rounded-2xl border flex items-center justify-between gap-3 transition cursor-pointer ${
                               isDark
                                 ? isChosen
-                                  ? 'bg-[#22313A] border-[#7EC4CF] text-[#E6F4F7] font-black'
-                                  : 'bg-[#12141A] border-[#2E3542] text-[#F3F4F6] hover:bg-[#222732] font-bold'
+                                  ? 'bg-[#342C47] border-purple-300 text-[#F3F0FA] font-black'
+                                  : 'bg-[#1B1723] border-purple-400/15 text-[#F3F0FA] hover:bg-[#2E283D] font-bold'
                                 : isChosen
                                   ? 'bg-[#54626f] border-[#54626f] text-white font-bold'
                                   : 'bg-[#f8fafb] border-[#54626f]/20 text-[#1F2118] hover:bg-[#e2eaeb]/70 font-semibold'
@@ -777,8 +808,8 @@ export default function QuizTakePage() {
                                 className={`w-9 h-9 rounded-xl flex items-center justify-center text-base font-black shrink-0 ${
                                   isDark
                                     ? isChosen
-                                      ? 'bg-[#7EC4CF] text-[#000000]'
-                                      : 'bg-[#222732] text-[#D1D5DB]'
+                                      ? 'bg-purple-300 text-[#18151F]'
+                                      : 'bg-[#2E283D] text-[#D8D0EC]'
                                     : isChosen
                                       ? 'bg-white text-[#54626f]'
                                       : 'bg-[#e2eaeb] text-[#54626f]'
@@ -812,14 +843,18 @@ export default function QuizTakePage() {
               )}
 
               {/* Navigation controls */}
-              <div className="pt-4 border-t border-[#54626f]/15 flex items-center justify-between gap-3">
+              <div
+                className={`pt-4 border-t flex items-center justify-between gap-3 ${
+                  isDark ? 'border-purple-400/15' : 'border-[#54626f]/15'
+                }`}
+              >
                 <button
                   type="button"
                   disabled={currentIndex === 0}
                   onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
                   className={`inline-flex items-center gap-2 px-5 py-3.5 rounded-2xl font-bold transition disabled:opacity-40 cursor-pointer ${
                     isDark
-                      ? 'bg-[#222732] text-[#F3F4F6] hover:bg-[#2C3240]'
+                      ? 'bg-[#2E283D] text-[#F3F0FA] hover:bg-[#3A324D]'
                       : 'bg-[#e2eaeb] text-[#54626f] hover:bg-[#d2dee0]'
                   }`}
                   style={{ fontSize: '19px' }}
@@ -836,7 +871,7 @@ export default function QuizTakePage() {
                     }
                     className={`inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl font-bold transition cursor-pointer ${
                       isDark
-                        ? 'bg-[#222732] text-[#F3F4F6] hover:bg-[#2C3240] font-black'
+                        ? 'bg-[#2E283D] text-[#F3F0FA] hover:bg-[#3A324D] font-black'
                         : 'bg-[#54626f] text-white hover:bg-[#1F2118]'
                     }`}
                     style={{ fontSize: '19px' }}
@@ -852,10 +887,10 @@ export default function QuizTakePage() {
                     className={`inline-flex items-center gap-2 px-7 py-4 rounded-2xl transition cursor-pointer ${
                       allAnswered
                         ? isDark
-                          ? 'bg-[#7EC4CF] text-[#000000] hover:bg-[#93D1DA] font-black'
+                          ? 'bg-purple-300 text-[#18151F] hover:bg-purple-200 font-black'
                           : 'bg-[#54626f] text-white hover:bg-[#1F2118] font-bold'
                         : isDark
-                          ? 'bg-[#222732] text-[#9CA3AF] border border-[#2E3542] font-bold'
+                          ? 'bg-[#2E283D] text-[#B5ACC9] border border-purple-400/20 font-bold'
                           : 'bg-[#e2eaeb] text-[#54626f] border border-[#54626f]/25 font-bold'
                     }`}
                     style={{ fontSize: '19px' }}
