@@ -93,3 +93,33 @@ export const fetchTeachMeHistory = async (userId) => {
   const data = await parseJsonSafe(res);
   return Array.isArray(data?.sessions) ? data.sessions : [];
 };
+
+export const deleteTeachMeSession = async (sessionId, userId) => {
+  if (!sessionId || !userId) {
+    throw new Error('Session ID and User ID are required.');
+  }
+  const res = await fetch(
+    `${cleanBaseUrl}/api/teach-me/session/${encodeURIComponent(
+      sessionId
+    )}?userId=${encodeURIComponent(userId)}`,
+    {
+      method: 'DELETE',
+    }
+  );
+  return parseJsonSafe(res);
+};
+
+export const clearAllTeachMeHistory = async (userId) => {
+  if (!userId) {
+    throw new Error('User ID is required.');
+  }
+  const res = await fetch(
+    `${cleanBaseUrl}/api/teach-me/history/${encodeURIComponent(
+      userId
+    )}?userId=${encodeURIComponent(userId)}`,
+    {
+      method: 'DELETE',
+    }
+  );
+  return parseJsonSafe(res);
+};

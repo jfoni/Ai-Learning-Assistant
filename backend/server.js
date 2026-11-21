@@ -22,6 +22,7 @@ import universalAssistantRoutes from './routes/universalAssistantRoutes.js';
 import knowledgeGapRoutes from './routes/knowledgeGapRoutes.js';
 import teachMeRoutes from './routes/teachMeRoutes.js';
 import noteGeneratorRoutes from './routes/noteGeneratorRoutes.js';
+import improvementRoutes from './routes/improvementRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,6 +62,7 @@ app.use('/api/assistant', universalAssistantRoutes);
 app.use('/api/knowledge-gaps', knowledgeGapRoutes);
 app.use('/api/teach-me', teachMeRoutes);
 app.use('/api/notes', noteGeneratorRoutes);
+app.use('/api/improvement', improvementRoutes);
 
 // Error Handler Middleware
 app.use(errorHandler);

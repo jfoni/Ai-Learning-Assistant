@@ -145,7 +145,7 @@ Return ONLY valid JSON matching this exact structure:
       dialogue: evaluation.followUpQuestion
         ? [
             {
-              role: 'Ai Tutor',
+              role: 'teacher',
               actionType: 'evaluate',
               content: evaluation.followUpQuestion,
             },
@@ -161,7 +161,7 @@ Return ONLY valid JSON matching this exact structure:
     console.error('Teach Me evaluate error:', err);
     return res.status(500).json({
       success: false,
-      message: 'Failed to evaluate explanation.',
+      message: err?.message || 'Failed to evaluate explanation.',
     });
   }
 };
@@ -292,7 +292,7 @@ Write plain, clean text using short paragraphs or simple "- " bullet lines. Avoi
     console.error('Teach Me interact error:', err);
     return res.status(500).json({
       success: false,
-      message: 'Failed to continue teacher interaction.',
+      message: err?.message || 'Failed to continue teacher interaction.',
     });
   }
 };
@@ -360,6 +360,74 @@ export const getTeachMeSessionByIdController = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to load session.',
+    });
+  }
+};
+
+export const deleteTeachMeSessionController = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const userId = req.query?.userId || req.body?.userId;
+
+    if (!userId || String(userId).trim() === '') {
+      return res.status(401).json({
+        success: false,
+        message: 'Authenticated userId is required.',
+      });
+    }
+
+    const deleted = await TeachMeSession.findOneAndDelete({
+      _id: sessionId,
+      userId: String(userId).trim(),
+    });
+
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: 'Teaching session not found.',
+      });
+    }
+
+    return res.json({
+      success: true,
+      deletedId: sessionId,
+      message: 'Teaching session deleted.',
+    });
+  } catch (err) {
+    console.error('Teach Me delete session error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete teaching session.',
+    });
+  }
+};
+
+export const deleteAllTeachMeHistoryController = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const requesterUid = req.query?.userId || req.body?.userId || userId;
+
+    if (!userId || String(requesterUid) !== String(userId)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized action.',
+      });
+    }
+
+    const result = await TeachMeSession.deleteMany({
+      userId: String(userId).trim(),
+    });
+
+    return res.json({
+      success: true,
+      deletedCount: result?.deletedCount || 0,
+      message: 'All teaching history deleted.',
+    });
+  } catch (err) {
+    console.error('Teach Me clear history error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to clear teaching history.',
     });
   }
 };

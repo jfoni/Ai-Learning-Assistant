@@ -1,7 +1,14 @@
-const Document = require('../models/Document');
-const Flashcard = require('../models/Flashcard');
-const Quiz = require('../models/Quiz');
-const QuizSubmission = require('../models/QuizSubmission');
+import Document from '../models/Document.js';
+import Flashcard from '../models/Flashcard.js';
+import Quiz from '../models/Quiz.js';
+
+let QuizSubmission = null;
+try {
+  const mod = await import('../models/QuizSubmission.js');
+  QuizSubmission = mod?.default || null;
+} catch {
+  QuizSubmission = null;
+}
 
 // Format date as YYYY-MM-DD in local time for accurate daily grouping
 const toDateKey = (dateInput) => {
@@ -20,7 +27,7 @@ const toShortLabel = (dateKey) => {
   return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
-exports.getUserImprovementData = async (req, res) => {
+export const getUserImprovementData = async (req, res) => {
   try {
     const { userId } = req.params;
     const days = Math.min(30, Math.max(5, Number(req.query.days) || 7));
@@ -36,7 +43,9 @@ exports.getUserImprovementData = async (req, res) => {
       Document.find({ userId }).lean().catch(() => []),
       Flashcard.find({ userId }).lean().catch(() => []),
       Quiz.find({ userId }).lean().catch(() => []),
-      QuizSubmission.find({ userId }).lean().catch(() => []),
+      QuizSubmission
+        ? QuizSubmission.find({ userId }).lean().catch(() => [])
+        : Promise.resolve([]),
     ]);
 
     const dayMap = new Map();

@@ -7,6 +7,8 @@ import {
   evaluateTeachMeExplanation,
   interactWithTeachMe,
   fetchTeachMeHistory,
+  deleteTeachMeSession,
+  clearAllTeachMeHistory,
 } from '../services/teachMeService';
 import { useTheme } from '../context/ThemeContext';
 import AppSidebar from '../components/AppSidebar';
@@ -28,6 +30,7 @@ import {
   MessageCircle,
   ArrowUpRight,
   ArrowDownRight,
+  Trash2,
 } from 'lucide-react';
 
 const DIFFICULTIES = ['Beginner', 'Intermediate', 'Advanced'];
@@ -78,6 +81,8 @@ export default function TeachMePage() {
   const [submitting, setSubmitting] = useState(false);
   const [interacting, setInteracting] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [deletingId, setDeletingId] = useState('');
+  const [clearingAll, setClearingAll] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   const [activeSession, setActiveSession] = useState(null);
@@ -274,6 +279,49 @@ export default function TeachMePage() {
     setExplanation(session.explanation || '');
     setShowCorrected(false);
     setErrorMsg('');
+  };
+
+  const handleDeleteHistoryItem = async (sessionId, e) => {
+    e.stopPropagation();
+    const uid = userId || auth.currentUser?.uid;
+    if (!sessionId || !uid || deletingId) return;
+
+    try {
+      setDeletingId(String(sessionId));
+      setErrorMsg('');
+      await deleteTeachMeSession(sessionId, uid);
+
+      setHistorySessions((prev) =>
+        prev.filter((item) => String(item._id) !== String(sessionId))
+      );
+
+      if (activeSession && String(activeSession._id) === String(sessionId)) {
+        setActiveSession(null);
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorMsg(err?.message || 'Could not delete teaching session.');
+    } finally {
+      setDeletingId('');
+    }
+  };
+
+  const handleClearAllHistory = async () => {
+    const uid = userId || auth.currentUser?.uid;
+    if (!uid || historySessions.length === 0 || clearingAll) return;
+
+    try {
+      setClearingAll(true);
+      setErrorMsg('');
+      await clearAllTeachMeHistory(uid);
+      setHistorySessions([]);
+      setActiveSession(null);
+    } catch (err) {
+      console.error(err);
+      setErrorMsg(err?.message || 'Could not clear teaching history.');
+    } finally {
+      setClearingAll(false);
+    }
   };
 
   const getPreviousTopicScore = (session) => {
@@ -933,15 +981,33 @@ export default function TeachMePage() {
               <div
                 className={`border rounded-3xl p-5 shadow-sm space-y-4 h-fit ${surfaceClass}`}
               >
-                <div className="flex items-center gap-2">
-                  <History
-                    className={`w-5 h-5 ${
-                      isDark ? 'text-purple-300' : 'text-[#2F5D68]'
-                    }`}
-                  />
-                  <h2 className="font-black" style={{ fontSize: '25px' }}>
-                    Teaching History
-                  </h2>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <History
+                      className={`w-5 h-5 ${
+                        isDark ? 'text-purple-300' : 'text-[#2F5D68]'
+                      }`}
+                    />
+                    <h2 className="font-black" style={{ fontSize: '25px' }}>
+                      Teaching History
+                    </h2>
+                  </div>
+
+                  {historySessions.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleClearAllHistory}
+                      disabled={clearingAll}
+                      className={`px-3 py-1 rounded-xl border font-bold transition cursor-pointer disabled:opacity-50 ${
+                        isDark
+                          ? 'border-rose-400/30 text-rose-300 hover:bg-rose-500/15'
+                          : 'border-rose-300 text-rose-600 hover:bg-rose-50'
+                      }`}
+                      style={{ fontSize: '15px' }}
+                    >
+                      {clearingAll ? 'Clearing...' : 'Clear All'}
+                    </button>
+                  )}
                 </div>
 
                 {loadingHistory ? (
@@ -981,20 +1047,38 @@ export default function TeachMePage() {
                         >
                           <div className="flex items-start justify-between gap-2">
                             <p
-                              className="font-extrabold leading-snug m-0"
+                              className="font-extrabold leading-snug m-0 flex-1 min-w-0 break-words"
                               style={{ fontSize: '21px' }}
                             >
                               {cleanDisplayText(item.topic)}
                             </p>
-                            <span
-                              className={`px-3 py-0.5 rounded-full font-black border shrink-0 ${getScoreBadgeClasses(
-                                itemScore,
-                                isDark
-                              )}`}
-                              style={{ fontSize: '17px' }}
-                            >
-                              {itemScore}%
-                            </span>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span
+                                className={`px-3 py-0.5 rounded-full font-black border ${getScoreBadgeClasses(
+                                  itemScore,
+                                  isDark
+                                )}`}
+                                style={{ fontSize: '17px' }}
+                              >
+                                {itemScore}%
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={(e) => handleDeleteHistoryItem(item._id, e)}
+                                disabled={deletingId === String(item._id)}
+                                title="Delete session"
+                                aria-label="Delete session"
+                                className={`p-1.5 rounded-xl transition cursor-pointer disabled:opacity-50 ${
+                                  isDark
+                                    ? 'text-rose-300 hover:bg-rose-500/20'
+                                    : 'text-rose-500 hover:bg-rose-100'
+                                }`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
 
                           <div

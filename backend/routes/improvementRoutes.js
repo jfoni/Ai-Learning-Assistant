@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import { getUserImprovementData } from '../controllers/improvementController.js';
+
 const router = express.Router();
-const { getUserImprovementData } = require('../controllers/improvementController');
 
 router.get('/:userId', getUserImprovementData);
 
-module.exports = router;
+export default router;

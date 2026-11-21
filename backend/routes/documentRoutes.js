@@ -3,8 +3,17 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
 import Document from '../models/Document.js';
-import { uploadDocument, getDocuments } from '../controllers/documentController.js';
+import {
+  uploadDocument,
+  getDocuments,
+  analyzeDocumentAI,
+  deleteDocument,
+  getChatHistory,
+  clearChatHistory,
+  chatWithDocumentAI,
+} from '../controllers/documentController.js';
 
 const router = express.Router();
 
@@ -60,8 +69,31 @@ const normalizeSingleUploadField = (req, res, next) => {
 // GET /api/documents?userId=...
 router.get('/', getDocuments);
 
+// GET /api/documents/:userId
+router.get('/:userId', (req, res, next) => {
+  if (!req.query.userId && req.params.userId) {
+    req.query.userId = req.params.userId;
+  }
+  return getDocuments(req, res, next);
+});
+
 // POST /api/documents/upload
 router.post('/upload', normalizeSingleUploadField, uploadDocument);
+
+// POST /api/documents/:id/analyze
+router.post('/:id/analyze', analyzeDocumentAI);
+
+// GET /api/documents/:id/chat
+router.get('/:id/chat', getChatHistory);
+
+// POST /api/documents/:id/chat
+router.post('/:id/chat', chatWithDocumentAI);
+
+// DELETE /api/documents/:id/chat
+router.delete('/:id/chat', clearChatHistory);
+
+// DELETE /api/documents/:id
+router.delete('/:id', deleteDocument);
 
 // GET /api/documents/:id/extract — helper for Note Generator to get extracted text/topic context
 router.get('/:id/extract', async (req, res) => {
@@ -116,6 +148,22 @@ router.get('/:id/extract', async (req, res) => {
       success: false,
       message: err?.message || 'Failed to read document content.',
     });
+  }
+});
+
+// GET /api/documents/:id — single document details (kept after /:userId so userId lookup still works)
+router.get('/:id', async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(String(req.params.id).trim())) {
+      return res.status(404).json({ success: false, error: 'Document not found' });
+    }
+    const doc = await Document.findById(req.params.id).lean();
+    if (!doc) {
+      return res.status(404).json({ success: false, error: 'Document not found' });
+    }
+    return res.status(200).json({ success: true, data: doc });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 

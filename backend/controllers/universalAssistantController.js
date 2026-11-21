@@ -96,6 +96,8 @@ export const askUniversalAssistantController = async (req, res) => {
       userId,
       mode = 'general',
       message = '',
+      prompt = '',
+      question = '',
       document = null,
       history = [],
       preferences = {},
@@ -111,7 +113,8 @@ export const askUniversalAssistantController = async (req, res) => {
     }
 
     const safeMode = VALID_MODES.has(mode) ? mode : 'general';
-    const promptText = String(message || '').trim();
+    const rawPrompt = message || prompt || question || '';
+    const promptText = String(rawPrompt).trim();
 
     if (!promptText && action === 'normal') {
       return res.status(400).json({
@@ -120,17 +123,26 @@ export const askUniversalAssistantController = async (req, res) => {
       });
     }
 
+    let docContent = '';
     if (safeMode === 'document') {
-      const docContent = String(
+      docContent = String(
         document?.content || document?.text || document?.extractedText || ''
       ).trim();
 
       if (!docContent) {
-        return res.status(400).json({
-          success: false,
-          message:
-            'Please select a document with readable text to use Document Learning Mode.',
-        });
+        const fallbackTitle = String(
+          document?.title || document?.fileName || ''
+        ).trim();
+
+        if (fallbackTitle) {
+          docContent = `Document Title: ${fallbackTitle}. Note: Full text was not preloaded; answer only from what is directly supported by this document title and state clearly if text details are unavailable.`;
+        } else {
+          return res.status(400).json({
+            success: false,
+            message:
+              'Please select a document with readable text to use Document Learning Mode.',
+          });
+        }
       }
     }
 
@@ -164,11 +176,7 @@ export const askUniversalAssistantController = async (req, res) => {
     const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash-lite' });
 
     const docContextText =
-      safeMode === 'document'
-        ? String(
-            document?.content || document?.text || document?.extractedText || ''
-          ).slice(0, 14000)
-        : '';
+      safeMode === 'document' ? docContent.slice(0, 14000) : '';
 
     const systemInstruction =
       safeMode === 'document'
