@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8000/api/documents';
+const RAW_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000')
+  .replace(/\/+$/, '')
+  .replace(/\/api$/, '');
+
+const API_BASE = `${RAW_BASE_URL}/api/documents`;
 
 export const fetchDocuments = async (userId) => {
   const res = await axios.get(`${API_BASE}/${userId}`);
