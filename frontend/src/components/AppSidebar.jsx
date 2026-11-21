@@ -20,7 +20,7 @@ import {
 
 const SIDEBAR_SUBTITLE = 'Personal Study Space';
 
-const NAV_ITEMS = [
+const ALL_FEATURES = [
   { label: 'Overview', to: '/dashboard', icon: TrendingUp },
   { label: 'Universal Assistant', to: '/assistant', icon: Sparkles },
   { label: 'Teach Me', to: '/teach-me', icon: GraduationCap },
@@ -30,23 +30,15 @@ const NAV_ITEMS = [
   { label: 'Quizzes', to: '/quizzes', icon: BookOpen },
   { label: 'Knowledge Gaps', to: '/knowledge-gaps', icon: SearchCheck },
   { label: 'Improvement', to: '/improvement', icon: Target },
+  { label: 'Profile', to: '/profile', icon: User },
 ];
 
-const PROFILE_ITEM = {
-  label: 'Profile',
-  to: '/profile',
-  icon: User,
-};
-
-export default function AppSidebar({ isOpen, onClose }) {
+export default function AppSidebar({ isOpen = true, onClose }) {
   const { isDark } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
 
-  if (!isOpen) return null;
-
-  const isProfileActive = location.pathname.startsWith(PROFILE_ITEM.to);
-  const ProfileIcon = PROFILE_ITEM.icon;
+  if (isOpen === false) return null;
 
   const handleLogout = async () => {
     onClose?.();
@@ -58,7 +50,7 @@ export default function AppSidebar({ isOpen, onClose }) {
     <>
       <div
         onClick={onClose}
-        className="fixed inset-0 bg-black/30 z-30 transition-opacity"
+        className="fixed inset-0 bg-black/30 z-30 transition-opacity md:hidden"
         aria-hidden="true"
       />
 
@@ -75,7 +67,9 @@ export default function AppSidebar({ isOpen, onClose }) {
             <div className="flex items-center gap-3 min-w-0">
               <div
                 className={`w-11 h-11 rounded-2xl flex items-center justify-center shadow-md shrink-0 ${
-                  isDark ? 'bg-[#2B2F3A] text-[#F3F4F6]' : 'bg-[#54626f] text-white'
+                  isDark
+                    ? 'bg-[#2B2F3A] text-[#F3F4F6]'
+                    : 'bg-[#54626f] text-white'
                 }`}
               >
                 <BookOpen className="w-5 h-5" />
@@ -84,7 +78,9 @@ export default function AppSidebar({ isOpen, onClose }) {
               <div className="min-w-0">
                 <h1
                   className={`tracking-tight truncate ${
-                    isDark ? 'font-black text-[#F3F4F6]' : 'font-black text-[#000000]'
+                    isDark
+                      ? 'font-black text-[#F3F4F6]'
+                      : 'font-black text-[#000000]'
                   }`}
                   style={{ fontSize: '21px', lineHeight: 1.2 }}
                 >
@@ -92,7 +88,9 @@ export default function AppSidebar({ isOpen, onClose }) {
                 </h1>
                 <p
                   className={`tracking-wider uppercase leading-snug mt-0.5 ${
-                    isDark ? 'font-black text-[#9CA3AF]' : 'font-extrabold text-[#54626f]'
+                    isDark
+                      ? 'font-black text-[#9CA3AF]'
+                      : 'font-extrabold text-[#54626f]'
                   }`}
                   style={{ fontSize: '12px' }}
                 >
@@ -116,7 +114,7 @@ export default function AppSidebar({ isOpen, onClose }) {
           </div>
 
           <nav className="space-y-2.5">
-            {NAV_ITEMS.map((item) => {
+            {ALL_FEATURES.map((item) => {
               const Icon = item.icon;
               const isActive =
                 item.to === '/dashboard'
@@ -163,43 +161,6 @@ export default function AppSidebar({ isOpen, onClose }) {
                 </Link>
               );
             })}
-
-            <Link
-              to={PROFILE_ITEM.to}
-              onClick={onClose}
-              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-full transition-colors ${
-                isDark
-                  ? isProfileActive
-                    ? 'bg-[#2A2F3B] text-[#FFFFFF] font-black border border-[#3E4556] shadow-2xs'
-                    : 'text-[#E5E7EB] hover:bg-[#222732] hover:text-[#FFFFFF] font-black'
-                  : isProfileActive
-                    ? 'bg-[#54626f] text-white font-extrabold'
-                    : 'text-[#1F2937] hover:bg-[#E2EAEB] hover:text-[#000000] font-extrabold'
-              }`}
-              style={{ fontSize: '18px', lineHeight: 1.3 }}
-            >
-              <ProfileIcon
-                className={`w-5 h-5 shrink-0 ${
-                  isDark
-                    ? isProfileActive
-                      ? 'text-[#FFFFFF]'
-                      : 'text-[#D1D5DB]'
-                    : isProfileActive
-                      ? 'text-white'
-                      : 'text-[#54626f]'
-                }`}
-              />
-              <span
-                className="truncate"
-                style={
-                  isDark
-                    ? { color: '#FFFFFF', fontWeight: 900, fontSize: '18px' }
-                    : undefined
-                }
-              >
-                {PROFILE_ITEM.label}
-              </span>
-            </Link>
           </nav>
         </div>
 

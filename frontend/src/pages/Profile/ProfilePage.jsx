@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   onAuthStateChanged,
   signOut,
@@ -15,8 +15,12 @@ import {
   BookOpen,
   BrainCircuit,
   FileText,
+  NotebookPen,
   TrendingUp,
   Target,
+  SearchCheck,
+  Sparkles,
+  GraduationCap,
   User,
   LogOut,
   Menu,
@@ -35,8 +39,23 @@ import {
 
 const SIDEBAR_SUBTITLE = 'Personal Study Space';
 
+const ALL_SIDEBAR_FEATURES = [
+  { label: 'Overview', to: '/dashboard', icon: TrendingUp },
+  { label: 'Universal Assistant', to: '/assistant', icon: Sparkles },
+  { label: 'Teach Me', to: '/teach-me', icon: GraduationCap },
+  { label: 'Documents', to: '/documents', icon: FileText },
+  { label: 'Study Notes', to: '/notes', icon: NotebookPen },
+  { label: 'Flashcards', to: '/flashcards', icon: BrainCircuit },
+  { label: 'Quizzes', to: '/quizzes', icon: BookOpen },
+  { label: 'Knowledge Gaps', to: '/knowledge-gaps', icon: SearchCheck },
+  { label: 'Improvement', to: '/improvement', icon: Target },
+  { label: 'Profile', to: '/profile', icon: User },
+];
+
 export default function ProfilePage() {
   const { isDark, setTheme } = useTheme();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
   const [displayName, setDisplayName] = useState('');
@@ -59,8 +78,7 @@ export default function ProfilePage() {
 
   const [statusMessage, setStatusMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const navigate = useNavigate();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -94,6 +112,7 @@ export default function ProfilePage() {
 
   const handleThemeChange = (mode) => {
     setTheme(mode);
+    setIsSidebarOpen(true);
     setStatusMessage(
       mode === 'dark'
         ? 'Dark mode enabled across the app.'
@@ -230,10 +249,6 @@ export default function ProfilePage() {
     },
   ];
 
-  const sidebarNavClass = `flex items-center gap-3 px-4 py-3 rounded-2xl font-extrabold transition ${
-    isDark ? 'hover:bg-[#262E37] text-[#E8ECEF]' : 'text-[#1f2937] hover:bg-[#e2eaeb]'
-  }`;
-
   return (
     <div
       className={`min-h-screen flex relative transition-colors ${
@@ -244,7 +259,7 @@ export default function ProfilePage() {
       {isSidebarOpen && (
         <div
           onClick={closeSidebar}
-          className="fixed inset-0 bg-black/25 z-30 transition-opacity"
+          className="fixed inset-0 bg-black/25 z-30 transition-opacity md:hidden"
           aria-hidden="true"
         />
       )}
@@ -286,60 +301,32 @@ export default function ProfilePage() {
             </div>
 
             <nav className="space-y-2">
-              <Link
-                to="/dashboard"
-                onClick={closeSidebar}
-                className={sidebarNavClass}
-                style={{ fontSize: '18px' }}
-              >
-                <TrendingUp className="w-5 h-5" />
-                <span>Overview</span>
-              </Link>
-              <Link
-                to="/documents"
-                onClick={closeSidebar}
-                className={sidebarNavClass}
-                style={{ fontSize: '18px' }}
-              >
-                <FileText className="w-5 h-5" />
-                <span>Documents</span>
-              </Link>
-              <Link
-                to="/flashcards"
-                onClick={closeSidebar}
-                className={sidebarNavClass}
-                style={{ fontSize: '18px' }}
-              >
-                <BrainCircuit className="w-5 h-5" />
-                <span>Flashcards</span>
-              </Link>
-              <Link
-                to="/quizzes"
-                onClick={closeSidebar}
-                className={sidebarNavClass}
-                style={{ fontSize: '18px' }}
-              >
-                <BookOpen className="w-5 h-5" />
-                <span>Quizzes</span>
-              </Link>
-              <Link
-                to="/improvement"
-                onClick={closeSidebar}
-                className={sidebarNavClass}
-                style={{ fontSize: '18px' }}
-              >
-                <Target className="w-5 h-5" />
-                <span>Improvement</span>
-              </Link>
-              <Link
-                to="/profile"
-                onClick={closeSidebar}
-                className="flex items-center gap-3 px-4 py-3 rounded-2xl font-extrabold bg-[#54626f] text-white transition"
-                style={{ fontSize: '18px' }}
-              >
-                <User className="w-5 h-5" />
-                <span>Profile</span>
-              </Link>
+              {ALL_SIDEBAR_FEATURES.map((item) => {
+                const Icon = item.icon;
+                const isActive =
+                  item.to === '/dashboard'
+                    ? location.pathname === '/dashboard'
+                    : location.pathname.startsWith(item.to);
+
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={closeSidebar}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-extrabold transition ${
+                      isActive
+                        ? 'bg-[#54626f] text-white'
+                        : isDark
+                          ? 'hover:bg-[#262E37] text-[#E8ECEF]'
+                          : 'text-[#1f2937] hover:bg-[#e2eaeb]'
+                    }`}
+                    style={{ fontSize: '18px' }}
+                  >
+                    <Icon className="w-5 h-5 shrink-0" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
             </nav>
           </div>
 

@@ -1,3 +1,6 @@
+import dns from "node:dns";
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -19,6 +22,7 @@ import universalAssistantRoutes from './routes/universalAssistantRoutes.js';
 import knowledgeGapRoutes from './routes/knowledgeGapRoutes.js';
 import teachMeRoutes from './routes/teachMeRoutes.js';
 import noteGeneratorRoutes from './routes/noteGeneratorRoutes.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -57,6 +61,7 @@ app.use('/api/assistant', universalAssistantRoutes);
 app.use('/api/knowledge-gaps', knowledgeGapRoutes);
 app.use('/api/teach-me', teachMeRoutes);
 app.use('/api/notes', noteGeneratorRoutes);
+
 // Error Handler Middleware
 app.use(errorHandler);
 
